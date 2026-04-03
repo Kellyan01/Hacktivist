@@ -121,6 +121,15 @@ Explorer la Matrice en Mode Fantôme révèle la **vulnérabilité unique** de c
                    ex: carte "Virement Anonyme" → neutralisé sans combat
 ```
 
+### Basculement vers Alerte Rouge
+
+Le basculement peut survenir de deux façons :
+
+1. **Jauge pleine** — `player.alert` atteint 100 en fin de tour
+2. **Carte hors discrétion** — jouer une carte dont le type n'est pas "Matrice" ou "Terrain" en Mode Fantôme déclenche immédiatement l'Alerte Rouge
+
+Dans les deux cas, l'effet de la carte est appliqué **avant** le basculement. C'est l'action elle-même qui trahit le joueur.
+
 ### La tension centrale
 
 **En Mode Fantôme :**
@@ -152,11 +161,27 @@ Le joueur a une **sensation de contrôle** sur ses choix. La profondeur vient de
 1. Piocher X cartes
 2. Recevoir Y énergie
 3. Jouer des cartes (dépensent de l'énergie)
+     → Pour chaque carte jouée en Mode Fantôme :
+        - Si type !== "Matrice" ET type !== "Terrain" :
+          effet appliqué → basculement Alerte Rouge immédiat
 4. Fin de tour :
+     → Décrémenter la durée de tous les statuts actifs (joueur + ennemis)
+     → Retirer les statuts expirés (duration <= 0)
      → En Mode Fantôme : jauge détection +base%
-     → En Alerte Rouge : les ennemis attaquent
-5. Défausser la main
+        - Si alert >= 100 : basculement Alerte Rouge
+     → En Alerte Rouge : les ennemis attaquent selon leur intention
+     → Afficher les nouvelles intentions des ennemis
+5. Vérifier conditions de fin de combat :
+     → Défaite : player.health <= 0
+     → Victoire : tous les ennemis ont health <= 0 OU statut "Neutralized"
+6. Défausser la main
 ```
+
+### Initiative — qui joue en premier
+
+Au début d'un combat, l'ordre est déterminé par la situation :
+- **Joueur en premier** : il a surpris l'ennemi (embuscade)
+- **Ennemi en premier** : il a été surpris ou détecté avant le combat
 
 ---
 

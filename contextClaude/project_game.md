@@ -62,4 +62,18 @@ Structure réorganisée : `entities/cardEntities/` et `entities/characterEntitie
 
 ## Prochaine étape
 
-Feature `entities` terminée. Prochaine feature à définir (moteur de combat, carte BSP, etc.).
+### feature/combat (à démarrer)
+
+Implémenter `CombatEngine.js` dans `src/script/game/`.
+
+**Avant de coder :** ajouter `dataThreshold` (int) dans `Enemy.js` — seuil de données pour révéler la vulnérabilité.
+
+**Constructeur :** `(player, enemies, initPlayer, energyPerTurn, handSize)`
+
+**Propriétés internes :** `turnCount`, `mode` ("Ghost"/"RedAlert"), `isOver`
+
+**Méthodes publiques :** `launchFight()`, `switchTurn()`, `playCard(card, targets)`, `switchGhostToRedAlert()`, `verifyVictory()`, `endFight()`
+
+**Méthodes privées :** `shuffleDeck()`, `shuffleDiscardInDeck()`, `drawCards()`, `discardCard()`, `initEnergy()`, `updateTurn()`, `updateAlert()`, `verifyAlert()`, `updateStatus()`, `showIntentions()`, `verifyData()`, `enemyAction()`
+
+Détail complet dans `documentation/hacktivistDevLog-Combat.md`.
