@@ -1,5 +1,5 @@
 //Class for the Player Character
-import { AbstractCharacter } from "./AbstractCharacter";
+import { AbstractCharacter } from "./AbstractCharacter.js";
 
 /*
 @name : string

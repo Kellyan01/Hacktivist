@@ -1,5 +1,5 @@
 //Class for the Game Enemies
-import { AbstractCharacter } from "./AbstractCharacter";
+import { AbstractCharacter } from "./AbstractCharacter.js";
 
 /*
 @name : string

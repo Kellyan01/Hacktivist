@@ -42,28 +42,24 @@ Hacktiviste/
 
 ## État d'avancement
 
-### feature/entities (en cours)
+### feature/entities (terminée)
 
-Entités créées dans `src/script/entities/` :
+Structure réorganisée : `entities/cardEntities/` et `entities/characterEntities/`, `Status.js` à la racine d'`entities/`.
 
-- `AbstractCard.js` — classe abstraite, propriétés : name, type, cost, description. Méthode abstraite `effect()`. Bloque l'instanciation directe via `new.target`.
-- `AbstractCharacter.js` — classe abstraite, propriétés : name, type, health. Méthode abstraite `act()`. Même pattern que AbstractCard.
+**Personnages** (`characterEntities/`) :
+- `AbstractCard.js` — abstraite, `effect(player, targets = [])`. `targets` est un tableau d'`AbstractCharacter`.
+- `AbstractCharacter.js` — abstraite, propriétés : name, type, health, status ([]). Méthode abstraite `act()`.
 - `Enemy.js` — extends AbstractCharacter. Propriétés : vulnerability, intention (null), actionsList. `act()` en TODO.
 - `Player.js` — extends AbstractCharacter. Propriétés : energy, alert, data, deck, discard ([]), hand ([]). `act()` en TODO.
+- `Status.js` — classe concrète. Propriétés : name, type, intensity (int), duration (int).
 
-### Cartes prévues pour le prototype (non encore implémentées)
-
-| Carte | Famille | Coût | Rôle |
-|---|---|---|---|
-| Scan Basique | Matrice | 1 | Recherche matricielle — génère 2 Data, +8% Détection en Mode Fantôme |
-| Firewall Personnel | Confrontation | 1 | Défense — gagne 5 Bouclier |
-| Brouilleur | Terrain | 1 | Furtivité — réduit Détection de 15%, inutilisable en Alerte Rouge |
-| Virement Anonyme | Social Engineering | 2 | Exploitation faille humaine — neutralise une cible révélée |
-| Frappe Cybernétique | Confrontation | 1 | Attaque physique — inflige X dégâts à une cible physique |
+**Cartes** (`cardEntities/`) :
+- `ScanBasique.js` — +2 data, +8 alert. Condition Mode Fantôme en TODO.
+- `FirewallPersonnel.js` — pousse Status "Shield" (intensity 5, duration 3) dans `player.status`.
+- `Brouilleur.js` — alert -= 15. Condition Alerte Rouge en TODO.
+- `VirementAnonyme.js` — cible `targets[0]` de type "Human", pousse Status "Neutralized" (intensity 1, duration 10000).
+- `FrappeCybernetique.js` — 5 dégâts sur `targets[0]`, réduits par le Shield le plus élevé dans `targets[0].status`. Min 0.
 
 ## Prochaine étape
 
-Implémenter `ScanBasique.js` — première carte concrète, extends AbstractCard.
-- Méthode `generateData(player)` — ajoute 2 Data au joueur
-- Méthode `increaseDetection(player)` — ajoute 8% à la jauge Alert
-- `effect(player)` appelle les deux méthodes (condition sur le mode de jeu à intégrer plus tard)
+Feature `entities` terminée. Prochaine feature à définir (moteur de combat, carte BSP, etc.).

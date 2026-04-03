@@ -3,6 +3,7 @@
 @name : string
 @type : string
 @health : int
+@status : array of Status
 */
 export class AbstractCharacter{
     constructor(name, type, health){
@@ -12,6 +13,7 @@ export class AbstractCharacter{
         this.name = name;
         this.type = type;
         this.health = health;
+        this.status = [];
     }
 
     /*

@@ -18,8 +18,10 @@ export class AbstractCard{
 
     /*Abstract method
     Launch the effects of a card
+    @player : Player
+    @targets : array of AbstractCharacter
     */
-    effect(){
+    effect(player, targets = []){
         throw new Error("effect() must be implemented");
     }
 }
