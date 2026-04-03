@@ -93,19 +93,42 @@ Classe abstraite commune à tous les personnages (joueur et ennemis).
 
 ---
 
+### Status
+
+**Fichier :** `src/script/entities/Status.js`
+
+Classe concrète représentant un état actif sur un personnage (buff ou debuff).
+
+**Propriétés :** `name`, `type`, `intensity` (int), `duration` (int)
+
+**Décision :** tableau d'objets `Status` plutôt qu'un objet `{}` — permet de conserver la temporalité (durée) et l'intensité de chaque état de façon autonome.
+
+`AbstractCharacter` expose `this.status = []` pour stocker ces états.
+
+---
+
+### Cartes du prototype
+
+Toutes les cartes se trouvent dans `src/script/entities/cardEntities/`.
+
+Signature commune : `effect(player, targets = [])` — `targets` est un tableau d'`AbstractCharacter`.
+
+| Carte | Famille | Coût | Fichier |
+|---|---|---|---|
+| Scan Basique | Matrice | 1 | `ScanBasique.js` |
+| Firewall Personnel | Confrontation | 1 | `FirewallPersonnel.js` |
+| Brouilleur | Terrain | 1 | `Brouilleur.js` |
+| Virement Anonyme | Social Engineering | 2 | `VirementAnonyme.js` |
+| Frappe Cybernétique | Attaque | 1 | `FrappeCybernetique.js` |
+
+**Décisions notables :**
+- `ScanBasique` et `Brouilleur` — la condition sur le mode de jeu (Fantôme / Alerte Rouge) est en TODO
+- `FirewallPersonnel` — crée un `Status` "Shield" (intensity 5, duration 3) dans `player.status`
+- `VirementAnonyme` — cible `targets[0]` uniquement, vérifie `type === "Human"`, applique "Neutralized" (duration 10000 pour simuler permanent)
+- `FrappeCybernetique` — prend en compte le bouclier le plus élevé dans `targets[0].status`, dégâts minimum 0
+
+---
+
 ## Prochaine session
 
-Implémenter les 5 cartes du prototype :
-
-| Carte | Famille | Coût | Statut |
-|---|---|---|---|
-| Scan Basique | Matrice | 1 | À faire en premier |
-| Firewall Personnel | Confrontation | 1 | À faire |
-| Brouilleur | Terrain | 1 | À faire |
-| Virement Anonyme | Social Engineering | 2 | À faire |
-| Frappe Cybernétique | Confrontation | 1 | À faire |
-
-**Point de départ :** `ScanBasique.js`
-- `generateData(player)` — +2 Data
-- `increaseDetection(player)` — +8% Alert
-- `effect(player)` — appelle les deux (condition sur le mode de jeu à intégrer plus tard)
+Feature `entities` terminée. Prochaine étape à définir (moteur de combat, carte BSP, etc.).
