@@ -2,6 +2,7 @@ import {Player} from "../entities/characterEntities/Player.js";
 import {Enemy} from "../entities/characterEntities/Enemy.js";
 import { VirementAnonyme } from "../entities/cardEntities/VirementAnonyme.js";
 
+
 //Class that handles combat between the player and the enemy
 /*
 @player : Player
@@ -53,6 +54,7 @@ export class CombatEngine {
     //Method to check Alert
     _verifyAlert(){
         if (this.player.alert >= 100) {
+            //this.switchGhostToRedAlert();
             return true;
         }
         return false;
@@ -107,39 +109,29 @@ export class CombatEngine {
     }
 
     //Method to update Status
-    _updateStatus() {
-        //if player has Status, decrease their duration and remove them if they are expired
-        if(this.player.status.length > 0){
-            for(const element of this.player.status){
-                element.duration--;
+    //@character : AbstractCharacter
+    _updateStatus(character) {
+        //if character has Status, decrease their duration and remove them if they are expired
+        if(character.status.length > 0){
+            for(const status of character.status){
+                status.duration--;
             }
 
             //remove the expired status
-            this.player.status = this.player.status.filter(status => {
+            character.status = character.status.filter(status => {
                 return status.duration > 0;
             })
         }
-
-        //for each enemy, do the same
-        for(const enemy of this.enemies){
-            if(enemy.status.length > 0){
-                for(const element of enemy.status){
-                    element.duration--;
-                }
-
-                //remove the expired status
-                enemy.status = enemy.status.filter(status => {
-                    return status.duration > 0;
-                })
-            }
-        }
-        
     }
 
     //Method to show Enemy Intentions
     _showIntentions(){
         for(const enemy of this.enemies){
-            console.log(`${enemy.name} intends to ${enemy.intention.description}`);
+            //show intention if not 0 health or neutralized
+            const isNeutralized = enemy.status.some(status => status.name === "Neutralized");
+            if(enemy.health > 0 && !isNeutralized){
+                console.log(`${enemy.name} intends to ${enemy.intention.description}`);
+            }
         }
     }
 
@@ -159,18 +151,116 @@ export class CombatEngine {
         };
     }
 
-    //Method to make the enemy act
+    //Method to make the enemy act then change intention
+    //@enemy : Enemy
     _enemyAction(enemy){
         enemy.act();
+        this._changeIntention(enemy);
     }
 
     //Method to generate an exploit card
+    //@enemy : Enemy
     _generateExploitCard(enemy){
         switch(enemy.vulnerability){
             case "Financial":
                 return new VirementAnonyme();
             default:
                 return null;
+        }
+    }
+
+    //Method to change Enemy Intention
+    //@enemy : Enemy
+    _changeIntention(enemy){
+        enemy.intention = enemy.actionsList[Math.floor(Math.random()*enemy.actionsList.length)];
+    }
+
+    //Method to handle player turn
+    _playerTurn(){
+        //Enemy datas
+        //a. show intentions
+        this._showIntentions();
+        //Player datas
+        //a. Update Status
+        this._updateStatus(this.player);
+        //b. reinitialize energy
+        this._initializeEnergy();
+        //c. draw cards
+        this._drawCards();
+    }
+
+    //Method to handle enemy turn
+    _enemyTurn(){
+        //if ghost mode, verify alert
+        if(this.mode === "Ghost"){
+            //a update alert
+            this._updateAlert();
+            //b. verify alert
+            this._verifyAlert() ? this.mode = "RedAlert" : null;
+        }
+
+        //if RedAlert mode -> enemy actions
+        if(this.mode === "RedAlert"){
+            //a. update satus
+            for(const enemy of this.enemies){
+                this._updateStatus(enemy);
+            }
+            //b. enemy actions if not 0 health or neutralized 
+            for(const enemy of this.enemies){
+                //verify neutralized status
+                const isNeutralized = enemy.status.some(status => status.name === "Neutralized");
+                if(enemy.health > 0 && !isNeutralized){
+                    this._enemyAction(enemy);
+                }
+            }
+        }
+    }
+
+    //PRUBLIC METHODS
+    //Method to lauch the combat
+    launchFight(){
+        //1. shuffle the player deck
+        this._shuffleDeck();
+        //2. Ghost Mode
+        this.mode = "Ghost";
+        //3. Initialize enemy Inentions
+        for(const enemy of this.enemies){
+            this._changeIntention(enemy);
+        }
+        //4. Player Started Hand
+        this._drawCards();
+        //5. Initialize Energy
+        this._initializeEnergy();
+        //6. Initialize Turn Count
+        this.turnCount = 0;
+        //7. Handle initial player turn if needed
+        if(!this.initPlayer){
+            //Enemy turn
+            //a. Enemy Act
+            for(const enemy of this.enemies){
+                this._enemyAction(enemy);
+            }
+            //b. then change turn
+            this.switchTurn();
+        }
+    }
+
+    //Method to change turn
+    /*
+    If initPlayer is true, the player starts first and acts on odd turns, else the enemies start first and act on even turns.
+    */
+    switchTurn(){
+        //1. Update Turn Count
+        this._updateTurn();
+        //2. Verify initPlayer and Modulo 2
+        //player turn
+        if((this.initPlayer && this.turnCount % 2 === 0) || (!this.initPlayer && this.turnCount % 2!== 0) ){
+            this._playerTurn();
+        }
+        //enemy turn
+        else{
+            this._enemyTurn();
+            this.switchTurn();
         }
     }
 }
