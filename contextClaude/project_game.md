@@ -68,4 +68,8 @@ Features `entities` et `combat` terminées et testées. Détail complet dans `do
 
 **Note :** `_verifyAlertAtRandom()` conservée inactive — détection probabiliste avant 100%, à activer lors de l'équilibrage.
 
-Prochaine étape à définir : interface navigateur, nouveaux ennemis, équilibrage...
+**Feuille de route (détail dans GDD section 11) :**
+- Court terme : interface navigateur (priorité 1), ciblage automatique dans `enemy.act()`
+- Moyen terme : nouveaux ennemis, nouvelles actions, nouvelles cartes
+- Long terme : carte BSP, récompenses, nœuds, méta-progression
+- Transversal : équilibrage jauge, dégâts, Status

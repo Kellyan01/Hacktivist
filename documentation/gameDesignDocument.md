@@ -260,11 +260,45 @@ Comme dans Slay the Spire, les ennemis affichent leur **intention du prochain to
 
 **Stack :** JavaScript Vanilla, rendu dans le navigateur.
 
-**Étapes suivantes après le prototype :**
-1. Ajouter 2-3 ennemis avec des vulnérabilités variées
-2. Construire la carte BSP entre les combats
-3. Implémenter la récompense de cartes après combat
-4. Équilibrage des coûts et de la jauge
+**État d'avancement :**
+- Entités (cartes, personnages, status, actions) — ✅ terminé
+- Moteur de combat `CombatEngine` — ✅ terminé
+- Test console fonctionnel — ✅ terminé
+- Interface navigateur — ❌ à faire
+
+---
+
+## 11. Feuille de route
+
+### Court terme — finir le prototype jouable
+
+| Priorité | Tâche | Description |
+|---|---|---|
+| 1 | **Interface navigateur** | Afficher le combat dans le DOM, rendre les cartes cliquables |
+| 2 | **Ciblage automatique** | Passer les bonnes cibles à `enemy.act()` dans tous les cas |
+
+### Moyen terme — enrichir le contenu
+
+| Tâche | Description |
+|---|---|
+| Nouveaux ennemis | Drone de Surveillance, Firewall Corp, Vigile Corrompu |
+| Nouvelles actions ennemies | Défense, scan, effets de status |
+| Nouvelles cartes | Exploit Zero-Day, Malware Ciblé |
+
+### Long terme — structure roguelite
+
+| Tâche | Description |
+|---|---|
+| Carte BSP | Génération procédurale des nœuds entre les combats |
+| Récompenses | Choix de cartes après un combat |
+| Nœuds | Marchands, repos, événements narratifs |
+| Méta-progression | Déblocage de cartes et reliques entre les runs |
+
+### Équilibrage transversal
+
+- Activer `_verifyAlertAtRandom()` et calibrer la jauge de détection
+- Calibrer les dégâts, coûts en énergie et durées des Status
+- Revoir le cumul des Status si nécessaire
 
 ---
 
