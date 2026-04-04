@@ -8,13 +8,15 @@ import { AbstractCharacter } from "./AbstractCharacter.js";
 @vulnerability : string
 @actionList : array of Action
 @intention : Action
+@dataThreshold : int
 */
 export class Enemy extends AbstractCharacter{
-    constructor(name, type, health, vulnerability, actionsList){
+    constructor(name, type, health, vulnerability, actionsList, dataThreshold){
         super(name, type, health);
         this.vulnerability = vulnerability;
         this.intention = null;
         this.actionsList = actionsList;
+        this.dataThreshold = dataThreshold;
     }
 
     /*

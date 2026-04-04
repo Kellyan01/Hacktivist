@@ -107,9 +107,41 @@ Ajout de la propriété `dataThreshold` (int) — seuil de données nécessaire 
 
 ---
 
+---
+
+## Session 2 — 2026-04-04
+
+### Implémentation des méthodes privées de CombatEngine
+
+**Fichier :** `src/script/game/CombatEngine.js`
+
+Toutes les méthodes privées sont implémentées :
+
+| Méthode | Statut | Notes |
+|---|---|---|
+| `_initializeEnergy()` | ✅ | `player.energy = energyPerTurn` |
+| `_updateTurn()` | ✅ | `turnCount++` |
+| `_updateAlert()` | ✅ | `Math.min(100, player.alert + 10)` |
+| `_verifyAlert()` | ✅ | `player.alert >= 100` |
+| `_verifyAlertAtRandom()` | ✅ | Gardée pour l'équilibrage futur — détection probabiliste avant 100% |
+| `_shuffleDeck()` | ✅ | Fisher-Yates |
+| `_shuffleDiscardInDeck()` | ✅ | concat + vidage défausse + shuffle |
+| `_drawCards()` | ✅ | Récursif — recycle défausse si deck vide, arrêt si deck toujours vide |
+| `_discardCard(card)` | ✅ | indexOf + splice + push dans discard |
+| `_updateStatus()` | ✅ | Décrémente duration, filtre les expirés — joueur et ennemis |
+| `_showIntentions()` | ✅ | console.log des intentions ennemies |
+| `_verifyData(enemy)` | ✅ | Appelle `_generateExploitCard()` si seuil atteint, shuffle le deck |
+| `_generateExploitCard(enemy)` | ✅ | Switch sur `enemy.vulnerability` — "Financial" → `VirementAnonyme` |
+| `_enemyAction(enemy)` | ✅ | Appelle `enemy.act()` |
+
+**Décisions notables :**
+- `_verifyAlertAtRandom()` conservée inactive — détection probabiliste à activer lors de l'équilibrage
+- `_generateExploitCard()` extensible via switch — ajouter un case par type de vulnérabilité
+
+---
+
 ## Prochaine session
 
-- Ajouter `dataThreshold` dans `Enemy.js`
-- Créer la branche `feature/combat`
-- Implémenter `CombatEngine.js`
+Implémenter les méthodes publiques de `CombatEngine` :
+`launchFight()`, `switchTurn()`, `playCard(card, targets)`, `switchGhostToRedAlert()`, `verifyVictory()`, `endFight()`
 

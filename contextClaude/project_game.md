@@ -72,8 +72,8 @@ Implémenter `CombatEngine.js` dans `src/script/game/`.
 
 **Propriétés internes :** `turnCount`, `mode` ("Ghost"/"RedAlert"), `isOver`
 
-**Méthodes publiques :** `launchFight()`, `switchTurn()`, `playCard(card, targets)`, `switchGhostToRedAlert()`, `verifyVictory()`, `endFight()`
+**Méthodes publiques :** `launchFight()`, `switchTurn()`, `playCard(card, targets)`, `switchGhostToRedAlert()`, `verifyVictory()`, `endFight()` — **à implémenter**
 
-**Méthodes privées :** `shuffleDeck()`, `shuffleDiscardInDeck()`, `drawCards()`, `discardCard()`, `initEnergy()`, `updateTurn()`, `updateAlert()`, `verifyAlert()`, `updateStatus()`, `showIntentions()`, `verifyData()`, `enemyAction()`
+**Méthodes privées :** toutes implémentées. Détail dans `documentation/hacktivistDevLog-Combat.md`.
 
-Détail complet dans `documentation/hacktivistDevLog-Combat.md`.
+**Note :** `_verifyAlertAtRandom()` conservée inactive — détection probabiliste avant 100%, à activer lors de l'équilibrage.
