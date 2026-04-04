@@ -12,7 +12,7 @@ import { VirementAnonyme } from "../entities/cardEntities/VirementAnonyme.js";
 @handSize : number
 */
 export class CombatEngine {
-    constructor(player, enemies, initPlayer, energyPerTurn, handSize) {
+    constructor(player, enemies, initPlayer, energyPerTurn, handSize, onAction = null) {
         this.player = player;
         this.enemies = enemies;
         this.initPlayer = initPlayer;
@@ -21,44 +21,125 @@ export class CombatEngine {
         this.turnCount = 0;
         this.mode = "Ghost";
         this.isOver = false;
+        this.onAction = onAction;
     }
 
     //PRIVATE METHODS
+    //Method to change Enemy Intention
+    //@enemy : Enemy
+    _changeIntention(enemy){
+        enemy.intention = enemy.actionsList[Math.floor(Math.random()*enemy.actionsList.length)];
+    }
+
+    //Method to discard a Card
+    //@card : AbstractCard
+    _discardCard(card) {
+        //remove the card from the hand
+        const index = this.player.hand.indexOf(card);
+        if (index > -1) {
+            this.player.hand.splice(index, 1);
+            //add the card to the discard
+            this.player.discard.push(card);
+        }
+    }
+
+    //Method to draw cards
+    _drawCards() {
+        //if the deck is empty, shuffle discard into deck
+        if (this.player.deck.length === 0) {
+            this._shuffleDiscardInDeck();
+        }
+
+        //if hand size is reached or deck is empty, stop drawing
+        if(this.player.hand.length === this.handSize || this.player.deck.length === 0) return;
+
+        //draw a card
+        this.player.hand.push(this.player.deck.pop());
+        
+        //call the method recursively until hand size is reached
+        this._drawCards();
+    }
+
+    //Method to make the enemy act then change intention
+    //@enemy : Enemy
+    async _enemyAction(enemy){
+        enemy.act(this.player, this.enemies);
+        await this.onAction?.(enemy);
+        this._changeIntention(enemy);
+    }   
+
+    //Method to handle enemy turn
+    async _enemyTurn(){
+        //if ghost mode, verify alert
+        if(this.mode === "Ghost"){
+            //a update alert
+            this._updateAlert();
+            //b. verify alert
+            this._verifyAlert() ? this.mode = "RedAlert" : null;
+        }
+
+        //if RedAlert mode -> enemy actions
+        if(this.mode === "RedAlert"){
+            //a. update satus
+            for(const enemy of this.enemies){
+                this._updateStatus(enemy);
+            }
+            //b. enemy actions if not 0 health or neutralized 
+            for(const enemy of this.enemies){
+                //verify neutralized status
+                const isNeutralized = enemy.status.some(status => status.name === "Neutralized");
+                if(enemy.health > 0 && !isNeutralized){
+                    await this._enemyAction(enemy);
+                    //Verify victory condition
+                    const winner = this.verifyVictory();
+                    if(winner){
+                        this.endFight();
+                        return winner;
+                    }
+                }
+            }
+        }
+    }
+
+    //Method to generate an exploit card
+    //@enemy : Enemy
+    _generateExploitCard(enemy){
+        switch(enemy.vulnerability){
+            case "Financial":
+                return new VirementAnonyme();
+            default:
+                return null;
+        }
+    } 
+
     //Method to initalize energy
     _initializeEnergy() {
         this.player.energy = this.energyPerTurn;
     }
 
-    //Methode to increase turn count
-    _updateTurn(){
-        this.turnCount++;
+    //Method to handle player turn
+    _playerTurn(){
+        //Enemy datas
+        //a. show intentions
+        this._showIntentions();
+        //Player datas
+        //a. Update Status
+        this._updateStatus(this.player);
+        //b. reinitialize energy
+        this._initializeEnergy();
+        //c. draw cards
+        this._drawCards();
     }
 
-    //Method to inceade alert
-    _updateAlert() {
-        this.player.alert = Math.min(100, this.player.alert + 10);
-    }
-
-    //Method to check Alert, random dectection
-    _verifyAlertAtRandom(){
-        //1. random number between 0 and 100
-        const randomNum = Math.random() * 100;
-        //2. if the number is less than the player's alert, the player is detected and return true
-        if (randomNum <= this.player.alert) {
-            this.switchGhostToRedAlert();
-            return true;
+    //Method to show Enemy Intentions
+    _showIntentions(){
+        for(const enemy of this.enemies){
+            //show intention if not 0 health or neutralized
+            const isNeutralized = enemy.status.some(status => status.name === "Neutralized");
+            if(enemy.health > 0 && !isNeutralized){
+                console.log(`${enemy.name} intends to ${enemy.intention.description}`);
+            }
         }
-        //3. else return false
-        return false;
-    }
-
-    //Method to check Alert
-    _verifyAlert(){
-        if (this.player.alert >= 100) {
-            this.switchGhostToRedAlert();
-            return true;
-        }
-        return false;
     }
 
     //Method pour shuffle the player deck
@@ -80,33 +161,9 @@ export class CombatEngine {
         this._shuffleDeck();
     }
 
-    //Method to draw cards
-    _drawCards() {
-        //if the deck is empty, shuffle discard into deck
-        if (this.player.deck.length === 0) {
-            this._shuffleDiscardInDeck();
-        }
-
-        //if hand size is reached or deck is empty, stop drawing
-        if(this.player.hand.length === this.handSize || this.player.deck.length === 0) return;
-
-        //draw a card
-        this.player.hand.push(this.player.deck.pop());
-        
-        //call the method recursively until hand size is reached
-        this._drawCards();
-    }
-
-    //Method to discard a Card
-    //@card : AbstractCard
-    _discardCard(card) {
-        //remove the card from the hand
-        const index = this.player.hand.indexOf(card);
-        if (index > -1) {
-            this.player.hand.splice(index, 1);
-            //add the card to the discard
-            this.player.discard.push(card);
-        }
+    //Method to inceade alert
+    _updateAlert() {
+        this.player.alert = Math.min(100, this.player.alert + 10);
     }
 
     //Method to update Status
@@ -125,15 +182,31 @@ export class CombatEngine {
         }
     }
 
-    //Method to show Enemy Intentions
-    _showIntentions(){
-        for(const enemy of this.enemies){
-            //show intention if not 0 health or neutralized
-            const isNeutralized = enemy.status.some(status => status.name === "Neutralized");
-            if(enemy.health > 0 && !isNeutralized){
-                console.log(`${enemy.name} intends to ${enemy.intention.description}`);
-            }
+    //Methode to increase turn count
+    _updateTurn(){
+        this.turnCount++;
+    }
+
+    //Method to check Alert
+    _verifyAlert(){
+        if (this.player.alert >= 100) {
+            this.switchGhostToRedAlert();
+            return true;
         }
+        return false;
+    }
+
+    //Method to check Alert, random dectection
+    _verifyAlertAtRandom(){
+        //1. random number between 0 and 100
+        const randomNum = Math.random() * 100;
+        //2. if the number is less than the player's alert, the player is detected and return true
+        if (randomNum <= this.player.alert) {
+            this.switchGhostToRedAlert();
+            return true;
+        }
+        //3. else return false
+        return false;
     }
 
     //Method to verify Data Threshold
@@ -154,80 +227,10 @@ export class CombatEngine {
         };
     }
 
-    //Method to make the enemy act then change intention
-    //@enemy : Enemy
-    _enemyAction(enemy){
-        enemy.act(this.player, this.enemies);
-        this._changeIntention(enemy);
-    }
-
-    //Method to generate an exploit card
-    //@enemy : Enemy
-    _generateExploitCard(enemy){
-        switch(enemy.vulnerability){
-            case "Financial":
-                return new VirementAnonyme();
-            default:
-                return null;
-        }
-    }
-
-    //Method to change Enemy Intention
-    //@enemy : Enemy
-    _changeIntention(enemy){
-        enemy.intention = enemy.actionsList[Math.floor(Math.random()*enemy.actionsList.length)];
-    }
-
-    //Method to handle player turn
-    _playerTurn(){
-        //Enemy datas
-        //a. show intentions
-        this._showIntentions();
-        //Player datas
-        //a. Update Status
-        this._updateStatus(this.player);
-        //b. reinitialize energy
-        this._initializeEnergy();
-        //c. draw cards
-        this._drawCards();
-    }
-
-    //Method to handle enemy turn
-    _enemyTurn(){
-        //if ghost mode, verify alert
-        if(this.mode === "Ghost"){
-            //a update alert
-            this._updateAlert();
-            //b. verify alert
-            this._verifyAlert() ? this.mode = "RedAlert" : null;
-        }
-
-        //if RedAlert mode -> enemy actions
-        if(this.mode === "RedAlert"){
-            //a. update satus
-            for(const enemy of this.enemies){
-                this._updateStatus(enemy);
-            }
-            //b. enemy actions if not 0 health or neutralized 
-            for(const enemy of this.enemies){
-                //verify neutralized status
-                const isNeutralized = enemy.status.some(status => status.name === "Neutralized");
-                if(enemy.health > 0 && !isNeutralized){
-                    this._enemyAction(enemy);
-                    //Verify victory condition
-                    const winner = this.verifyVictory();
-                    if(winner){
-                        this.endFight();
-                        return winner;
-                    }
-                }
-            }
-        }
-    }
 
     //PRUBLIC METHODS
     //Method to lauch the combat
-    launchFight(){
+    async launchFight(){
         //1. shuffle the player deck
         this._shuffleDeck();
         //2. Ghost Mode
@@ -247,7 +250,7 @@ export class CombatEngine {
             //Enemy turn
             //a. Enemy Act
             for(const enemy of this.enemies){
-                this._enemyAction(enemy);
+                await this._enemyAction(enemy);
                 //Verify victory condition
                 const winner = this.verifyVictory();
                 if(winner){
@@ -264,7 +267,7 @@ export class CombatEngine {
     /*
     If initPlayer is true, the player starts first and acts on odd turns, else the enemies start first and act on even turns.
     */
-    switchTurn(){
+    async switchTurn(){
         //Verify isOver
         if(this.isOver){
             return;
@@ -278,12 +281,12 @@ export class CombatEngine {
         }
         //enemy turn
         else{
-            const isVictory = this._enemyTurn();
+            const isVictory = await this._enemyTurn();
             //Verify victory condition
             if(isVictory){
                 return isVictory;
             }
-            this.switchTurn();
+            await this.switchTurn();
         }
     }
 
@@ -337,7 +340,7 @@ export class CombatEngine {
             return winner;
         }
         //7. Verif Data
-        for(const enemy of targets){
+        for(const enemy of this.enemies){
             this._verifyData(enemy);
         }
         //6. Verify Ghost Mode

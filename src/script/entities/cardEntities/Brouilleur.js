@@ -3,7 +3,7 @@ import {AbstractCard} from "./AbstractCard.js";
 //Class pour la carte Brouilleur
 export class Brouilleur extends AbstractCard{
     constructor() {
-        super("Brouilleur", "Terrain", 1,"Réduit la jauge de Détection de 15%. Ne peut pas être joué en Alerte Rouge.");
+        super("Brouilleur", "Terrain", 1,"Réduit la jauge de Détection de 15%. Ne peut pas être joué en Alerte Rouge.",false);
     }
 
     //Réduit la détection du joueur de 15%

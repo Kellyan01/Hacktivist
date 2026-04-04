@@ -264,7 +264,7 @@ Comme dans Slay the Spire, les ennemis affichent leur **intention du prochain to
 - Entités (cartes, personnages, status, actions) — ✅ terminé
 - Moteur de combat `CombatEngine` — ✅ terminé
 - Test console fonctionnel — ✅ terminé
-- Interface navigateur — ❌ à faire
+- Interface navigateur — ✅ terminé
 
 ---
 

@@ -4,7 +4,7 @@ import {Status} from "../Status.js";
 //Class pour la carte Firewall Personnel
 export class FirewallPersonnel extends AbstractCard{
     constructor() {
-        super("Firewall Personnel", "Confrontation", 1,"Gagne 5 points de Bouclier pendant 3 tours.");
+        super("Firewall Personnel", "Confrontation", 1,"Gagne 5 points de Bouclier pendant 3 tours.",false);
     }
 
     //Génère 5 points de bouclier pour le joueur pendant 3 tours

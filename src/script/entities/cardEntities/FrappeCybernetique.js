@@ -3,7 +3,7 @@ import {AbstractCard} from "./AbstractCard.js";
 //Class pour la carte Frappe Cybernétique
 export class FrappeCybernetique extends AbstractCard{
     constructor() {
-        super("Frappe Cybernétique", "Attaque", 1," inflige 5 dégâts à une cible physique.");
+        super("Frappe Cybernétique", "Attaque", 1," inflige 5 dégâts à une cible physique.",true);
     }
 
     //Inflige 5 dégâts sur la cible

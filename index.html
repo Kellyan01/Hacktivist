@@ -4,9 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="./src/style/main.css">
 </head>
 <body>
+    <header id="header">
+        <p id="info"></p>
+    </header>
+    <main id="game">
+        <section id="combat-zone">
+            <section id="enemy-zone">
+            </section>
+            <section id="player-zone">
+                <article class="player-stats"></article>
+                <article class="player-status"></article>
+            </section>
+        </section>
+        <section id="hand-zone">
+        </section>
+        <section id="controls-zone">
+            <button id="btn-end-turn">Fin de Tour</button>
+            <button id="btn-play">Jouer</button>
+            <p id="combat-result"></p>
+        </section>
+    </main>
     
-    <script type="module"src="./src/script/script.js"></script>
+    <script type="module" src="./src/script/script.js"></script>
 </body>
 </html>

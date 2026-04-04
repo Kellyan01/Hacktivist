@@ -4,7 +4,7 @@ import {Status} from "../Status.js";
 //Class pour la carte Virement Anonyme
 export class VirementAnonyme extends AbstractCard{
     constructor() {
-        super("Virement Anonyme", "Social Engineering", 2,"Exploite la vulnérabilité humaine d'une cible révélée (type Financier). Neutralise sans combat.");
+        super("Virement Anonyme", "Social Engineering", 2,"Exploite la vulnérabilité humaine d'une cible révélée (type Financier). Neutralise sans combat.",true);
     }
 
     //Génère l'état Neutralisé sur la cible

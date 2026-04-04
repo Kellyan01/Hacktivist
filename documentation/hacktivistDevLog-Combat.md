@@ -200,5 +200,5 @@ Script de test fonctionnel dans `src/script/script.js`.
 
 ## Prochaine étape
 
-Feature `combat` terminée. Prochaine étape à définir (interface navigateur, nouveaux ennemis, équilibrage...).
+Feature `combat` terminée. Voir `hacktivistDevLog-Interface.md` pour la suite.
 

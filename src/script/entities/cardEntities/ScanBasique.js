@@ -3,7 +3,7 @@ import {AbstractCard} from "./AbstractCard.js";
 //Class pour la carte Scan Basique
 export class ScanBasique extends AbstractCard{
     constructor() {
-        super("Scan Basique", "Matrice", 1,"Génère 2 Données. Si utilisé en Mode Fantôme : +8% Détection.");
+        super("Scan Basique", "Matrice", 1,"Génère 2 Données. Si utilisé en Mode Fantôme : +8% Détection.",false);
     }
 
     //Génère 2 données pour le joueur

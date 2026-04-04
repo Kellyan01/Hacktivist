@@ -42,6 +42,35 @@ Hacktiviste/
 
 ## État d'avancement
 
+### feature/interface (terminée)
+
+Fichiers modifiés/créés :
+- `index.html` — structure DOM : `#game`, `#combat-zone`, `#enemy-zone`, `#player-zone`, `#hand-zone`, `#controls-zone`, `#combat-result`, `#info`
+- `src/style/main.css` — ambiance visuelle : fond sombre neutre, cyan (`ghost-mode`), rouge (`red-alert-mode`), `#btn-play` caché par défaut
+- `src/script/game/CombatUI.js` — classe responsable du rendu DOM et des interactions
+- `src/script/script.js` — point d'entrée, câblage CombatEngine + CombatUI + callback `onAction`
+
+**CombatUI — méthodes :**
+- `render()` — point d'entrée rendu, appelle les 4 sous-méthodes
+- `_renderMode()` — bascule les classes CSS selon `combatEngine.mode`
+- `_renderPlayer()` — stats et status joueur
+- `_renderEnemies()` — stats, intention et status ennemis, `dataset.index` pour ciblage
+- `_renderHand()` — cartes en main, `dataset.index`, classe `selected`
+- `_selectCard(card)` — sélection/désélection, affiche `btnPlay` si `!card.targeted`
+- `_targetEnemy(enemy)` — joue `selectedCard` sur l'ennemi ciblé (async)
+- `_handleCombatResult(result)` — affiche victoire/défaite, désactive les boutons
+- `bindEvents()` — délégation d'événements sur `#hand-zone`, `#enemy-zone`, `#btn-play`, `#btn-end-turn`
+
+**Propriété `targeted` ajoutée sur `AbstractCard`** — `true` sur `FrappeCybernetique` et `VirementAnonyme`.
+
+**Bug corrigé dans `CombatEngine.playCard()`** — `_verifyData()` itérait sur `targets` au lieu de `this.enemies`, empêchant la génération de la carte exploit après `ScanBasique`.
+
+**Callback `onAction`** — paramètre optionnel de `CombatEngine`. Appelé après chaque `enemy.act()` (avant `_changeIntention`). Permet d'injecter des animations sans coupler l'engine à l'UI. `switchTurn()`, `_enemyTurn()`, `_enemyAction()` sont désormais `async`.
+
+**Pattern sleep :** `const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));` défini dans `script.js`.
+
+---
+
 ### feature/entities (terminée)
 
 Structure réorganisée : `entities/cardEntities/` et `entities/characterEntities/`, `Status.js` à la racine d'`entities/`.
@@ -62,14 +91,14 @@ Structure réorganisée : `entities/cardEntities/` et `entities/characterEntitie
 
 ## Prochaine étape
 
-Features `entities` et `combat` terminées et testées. Détail complet dans `documentation/hacktivistDevLog-Combat.md`.
+Features `entities`, `combat` et `interface` terminées. Détail complet dans `documentation/hacktivistDevLog-Combat.md`.
 
 **Décision game design — cumul des Status :** on garde les valeurs les plus grandes (`intensity` et `duration`). Pas de stacking. Révisable lors de l'équilibrage.
 
 **Note :** `_verifyAlertAtRandom()` conservée inactive — détection probabiliste avant 100%, à activer lors de l'équilibrage.
 
 **Feuille de route (détail dans GDD section 11) :**
-- Court terme : interface navigateur (priorité 1), ciblage automatique dans `enemy.act()`
-- Moyen terme : nouveaux ennemis, nouvelles actions, nouvelles cartes
+- Court terme : ciblage automatique dans `enemy.act()` (priorité 1)
+- Moyen terme : nouveaux ennemis, nouvelles actions, nouvelles cartes, animations par carte
 - Long terme : carte BSP, récompenses, nœuds, méta-progression
 - Transversal : équilibrage jauge, dégâts, Status
