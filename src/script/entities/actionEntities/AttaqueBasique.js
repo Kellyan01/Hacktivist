@@ -26,6 +26,9 @@ export class AttaqueBasique extends AbstractAction{
 
     //Lance les effets de l'action'
     effect(enemy, targets = []){
+        //Select target "Hacktivist"
+        targets = targets.filter(target => target.type === "Hacktivist");
+        console.log(targets);
         this.dealDamage(enemy, targets);
     }
 }

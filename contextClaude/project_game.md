@@ -62,21 +62,10 @@ Structure réorganisée : `entities/cardEntities/` et `entities/characterEntitie
 
 ## Prochaine étape
 
-### feature/combat (à démarrer)
+Features `entities` et `combat` terminées et testées. Détail complet dans `documentation/hacktivistDevLog-Combat.md`.
 
-Implémenter `CombatEngine.js` dans `src/script/game/`.
-
-**Avant de coder :** ajouter `dataThreshold` (int) dans `Enemy.js` — seuil de données pour révéler la vulnérabilité.
-
-**Constructeur :** `(player, enemies, initPlayer, energyPerTurn, handSize)`
-
-**Propriétés internes :** `turnCount`, `mode` ("Ghost"/"RedAlert"), `isOver`
-
-`CombatEngine.js` complet — toutes les méthodes publiques et privées implémentées.
-Détail complet dans `documentation/hacktivistDevLog-Combat.md`.
+**Décision game design — cumul des Status :** on garde les valeurs les plus grandes (`intensity` et `duration`). Pas de stacking. Révisable lors de l'équilibrage.
 
 **Note :** `_verifyAlertAtRandom()` conservée inactive — détection probabiliste avant 100%, à activer lors de l'équilibrage.
 
-## Prochaine étape
-
-Feature `combat` terminée. Prochaine étape à définir (interface, premier ennemi concret, tests...).
+Prochaine étape à définir : interface navigateur, nouveaux ennemis, équilibrage...

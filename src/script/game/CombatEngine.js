@@ -145,6 +145,8 @@ export class CombatEngine {
             if(exploitCard !== null){
                 this.player.deck.push(exploitCard);
                 console.log(`Data threshold reached for ${enemy.name}. ${exploitCard.name} added to deck.`);
+                //All data was found for this enemy -> Change enemy.dataThreshold
+                enemy.dataThreshold = undefined;
             }
             //shuffle deck to make sure the card can be drawn
             this._shuffleDeck();
@@ -155,7 +157,7 @@ export class CombatEngine {
     //Method to make the enemy act then change intention
     //@enemy : Enemy
     _enemyAction(enemy){
-        enemy.act();
+        enemy.act(this.player, this.enemies);
         this._changeIntention(enemy);
     }
 
@@ -212,6 +214,12 @@ export class CombatEngine {
                 const isNeutralized = enemy.status.some(status => status.name === "Neutralized");
                 if(enemy.health > 0 && !isNeutralized){
                     this._enemyAction(enemy);
+                    //Verify victory condition
+                    const winner = this.verifyVictory();
+                    if(winner){
+                        this.endFight();
+                        return winner;
+                    }
                 }
             }
         }
@@ -240,6 +248,12 @@ export class CombatEngine {
             //a. Enemy Act
             for(const enemy of this.enemies){
                 this._enemyAction(enemy);
+                //Verify victory condition
+                const winner = this.verifyVictory();
+                if(winner){
+                    this.endFight();
+                    return winner;
+                }
             }
             //b. then change turn
             this.switchTurn();
@@ -251,6 +265,10 @@ export class CombatEngine {
     If initPlayer is true, the player starts first and acts on odd turns, else the enemies start first and act on even turns.
     */
     switchTurn(){
+        //Verify isOver
+        if(this.isOver){
+            return;
+        }
         //1. Update Turn Count
         this._updateTurn();
         //2. Verify initPlayer and Modulo 2
@@ -260,7 +278,11 @@ export class CombatEngine {
         }
         //enemy turn
         else{
-            this._enemyTurn();
+            const isVictory = this._enemyTurn();
+            //Verify victory condition
+            if(isVictory){
+                return isVictory;
+            }
             this.switchTurn();
         }
     }
@@ -306,11 +328,21 @@ export class CombatEngine {
         this.player.energy -= card.cost;
         //3. Play the card effect
         card.effect(this.player, targets);
-        //4. Verify Ghost Mode
+        //4. Discard the card
+        this._discardCard(card);
+        //5. Verify victory condition
+        const winner = this.verifyVictory();
+        if(winner){
+            this.endFight();
+            return winner;
+        }
+        //7. Verif Data
+        for(const enemy of targets){
+            this._verifyData(enemy);
+        }
+        //6. Verify Ghost Mode
         if(this.mode === "Ghost" && card.type !== "Matrice" && card.type !=="Terrain"){
             this.switchGhostToRedAlert();
         }
-        //5. Discard the card
-        this._discardCard(card);
     }
 }

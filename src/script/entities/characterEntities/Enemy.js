@@ -21,8 +21,10 @@ export class Enemy extends AbstractCharacter{
 
     /*
     Method to act during a turn
+    @player : Player
+    @enemies : Enemy[]
     */
-    act(){
+    act(player,enemies){
         //TODO : implement this method
         console.log("A mon tour d'agir !");
     }

@@ -18,8 +18,10 @@ export class AbstractCharacter{
 
     /*
     Abstract Method to act during a turn
+    @player : Player
+    @enemies : Enemy[]
     */
-    act(){
+    act(player,enemies){
         throw new Error("act() must be implemented");
     }
 }

@@ -169,7 +169,36 @@ Ajouts et modifications par rapport à la conception initiale :
 
 ---
 
-## Prochaine session
+---
 
-`CombatEngine` complet. Prochaine étape à définir (interface, tests, premier ennemi concret...).
+## Session 4 — 2026-04-05
+
+### Nouveaux fichiers
+
+- `src/script/entities/actionEntities/AbstractAction.js` — classe abstraite pour les actions ennemies. Propriétés : `name`, `type`, `description`. Méthode abstraite `effect(enemy, targets = [])`.
+- `src/script/entities/actionEntities/AttaqueBasique.js` — extends AbstractAction. Inflige 6 dégâts à `targets[0]` en tenant compte du Shield.
+- `src/script/entities/characterEntities/GardeDeNuit.js` — extends Enemy. 12 PV, type "Human", vulnérabilité "Financial", dataThreshold 3, actionsList : [AttaqueBasique].
+
+### Corrections et ajouts dans CombatEngine
+
+- `_verifyData()` — `enemy.dataThreshold` mis à `undefined` après génération de la carte exploit, pour éviter les doublons
+- `_enemyAction()` — passe `this.player` et `this.enemies` à `enemy.act()`
+- `playCard()` — appelle `_verifyData()` pour chaque ennemi après l'effet de la carte
+- `verifyVictory()` — appelée après chaque action ennemi et chaque carte jouée. Retourne le vainqueur et appelle `endFight()` si combat terminé
+- `switchTurn()` — vérifie `isOver` en entrée pour stopper la récursion si combat terminé
+
+### Décisions de game design
+
+- **Cumul des Status de même type** — on garde les valeurs les plus grandes (`intensity` et `duration`). Pas de stacking infini, mais rejouer une carte rafraîchit les valeurs si elles sont supérieures. `FirewallPersonnel` implémente cette logique.
+- **Bouclier persistant** — contrairement à Slay the Spire, le Shield dure plusieurs tours. Le stacking d'intensity aurait créé des murs infranchissables.
+
+### Test
+
+Script de test fonctionnel dans `src/script/script.js`.
+
+---
+
+## Prochaine étape
+
+Feature `combat` terminée. Prochaine étape à définir (interface navigateur, nouveaux ennemis, équilibrage...).
 
