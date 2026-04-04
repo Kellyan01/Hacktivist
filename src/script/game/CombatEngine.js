@@ -45,6 +45,7 @@ export class CombatEngine {
         const randomNum = Math.random() * 100;
         //2. if the number is less than the player's alert, the player is detected and return true
         if (randomNum <= this.player.alert) {
+            this.switchGhostToRedAlert();
             return true;
         }
         //3. else return false
@@ -54,7 +55,7 @@ export class CombatEngine {
     //Method to check Alert
     _verifyAlert(){
         if (this.player.alert >= 100) {
-            //this.switchGhostToRedAlert();
+            this.switchGhostToRedAlert();
             return true;
         }
         return false;
@@ -262,5 +263,54 @@ export class CombatEngine {
             this._enemyTurn();
             this.switchTurn();
         }
+    }
+
+    //Method to switch from Ghost to Red Alert mode
+    switchGhostToRedAlert(){
+        this.mode = "RedAlert";
+        console.log("You have been detected! Switching to Red Alert mode.");
+    }
+
+    //Method to verify combat winner
+    verifyVictory(){
+        //1. if player health is less than or equal to 0, enemies win
+        if(this.player.health <= 0){
+            return this.enemies;
+        }
+        //2. if all enemies have 0 health or are neutralized, player wins
+        if(this.enemies.every(enemy => enemy.health <= 0 || enemy.status.some(status => status.name === "Neutralized"))){
+            return this.player;
+        }
+        //3. else, combat is not over
+        return null;
+    }
+
+    //Method to end combat
+    endFight(){
+        this.isOver = true;
+        this.player = null;
+        this.enemies = null;
+    }
+
+    //Method to play card
+    /*
+    @card : AbstractCard
+    @targets : AbstractCharacter[]
+    */
+    playCard(card, targets = []){
+        //1. Verify that player has enough energy to play the card
+        if(this.player.energy < card.cost){
+            throw new Error("Not enough energy to play this card.");
+        }
+        //2. Deduct the energy cost of the card
+        this.player.energy -= card.cost;
+        //3. Play the card effect
+        card.effect(this.player, targets);
+        //4. Verify Ghost Mode
+        if(this.mode === "Ghost" && card.type !== "Matrice" && card.type !=="Terrain"){
+            this.switchGhostToRedAlert();
+        }
+        //5. Discard the card
+        this._discardCard(card);
     }
 }

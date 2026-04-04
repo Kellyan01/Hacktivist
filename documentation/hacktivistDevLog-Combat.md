@@ -140,8 +140,36 @@ Toutes les méthodes privées sont implémentées :
 
 ---
 
+---
+
+## Session 3 — 2026-04-05
+
+### Implémentation des méthodes publiques de CombatEngine
+
+Ajouts et modifications par rapport à la conception initiale :
+
+- `_updateStatus()` refactorisé — prend un `character` en paramètre plutôt que d'itérer en interne
+- `_enemyAction()` — appelle désormais `_changeIntention()` après `enemy.act()`
+- `_changeIntention(enemy)` — nouvelle méthode privée, pioche aléatoirement dans `enemy.actionsList`
+- `_playerTurn()` et `_enemyTurn()` — nouvelles méthodes privées pour factoriser la logique de tour
+- `_showIntentions()` — filtre les ennemis à `health <= 0` ou "Neutralized"
+
+**Méthodes publiques :**
+
+| Méthode | Notes |
+|---|---|
+| `launchFight()` | Shuffle, mode Ghost, intentions, main, énergie, turnCount à 0, gère initiative |
+| `switchTurn()` | Modulo 2 + `initPlayer` pour déterminer le tour — ennemi enchaîne automatiquement sur joueur |
+| `playCard(card, targets)` | Vérifie énergie, déduit coût, effet, bascule si hors discrétion en Ghost, défausse |
+| `switchGhostToRedAlert()` | `this.mode = "RedAlert"` |
+| `verifyVictory()` | `null` / `Player` (victoire) / `enemies[]` (défaite) |
+| `endFight()` | `isOver = true`, nullifie `player` et `enemies` pour le GC |
+
+**Décision notable :** en Mode Fantôme, les ennemis n'agissent pas — `_enemyTurn()` incrémente seulement `alert` et bascule si nécessaire.
+
+---
+
 ## Prochaine session
 
-Implémenter les méthodes publiques de `CombatEngine` :
-`launchFight()`, `switchTurn()`, `playCard(card, targets)`, `switchGhostToRedAlert()`, `verifyVictory()`, `endFight()`
+`CombatEngine` complet. Prochaine étape à définir (interface, tests, premier ennemi concret...).
 
