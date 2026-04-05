@@ -25,7 +25,7 @@ export class Enemy extends AbstractCharacter{
     @enemies : Enemy[]
     */
     act(player,enemies){
-        //TODO : implement this method
         console.log("A mon tour d'agir !");
+        this.intention.effect(this, [player, ...enemies]);
     }
 }

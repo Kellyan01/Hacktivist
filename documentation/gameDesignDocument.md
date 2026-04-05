@@ -258,7 +258,8 @@ Comme dans Slay the Spire, les ennemis affichent leur **intention du prochain to
 - Le basculement Mode Fantôme → Alerte Rouge
 - Pas d'art, pas de carte BSP — juste la mécanique
 
-**Stack :** JavaScript Vanilla, rendu dans le navigateur.
+**Stack actuelle :** JavaScript Vanilla, rendu dans le navigateur.
+**Stack cible :** Godot 4 (C#) — voir `documentation/techStack.md`.
 
 **État d'avancement :**
 - Entités (cartes, personnages, status, actions) — ✅ terminé

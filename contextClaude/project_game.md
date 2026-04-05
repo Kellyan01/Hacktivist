@@ -10,6 +10,10 @@ GDD disponible dans : `documentation/gameDesignDocument.md`
 
 Projet séparé du projet Algo A Star. Les algos appris là-bas (BSP, Voronoi, A*...) seront réutilisés ici plus tard.
 
+**Stack cible : Godot 4 (C#)** — migration en cours en Option B (prototype parallèle). Détail dans `documentation/techStack.md`.
+**Son/Musique :** Bfxr (SFX court terme), BeepBox ou commission (moyen terme).
+**Animation :** illustrations fixes + Aseprite, style Slay the Spire plutôt que Hades. Utilisateur est illustrateur.
+
 **Why:** l'utilisateur veut garder le projet Algo A Star comme espace d'exploration des algorithmes.
 **How to apply:** ne pas mélanger les deux projets.
 
