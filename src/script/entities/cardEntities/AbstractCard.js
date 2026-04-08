@@ -5,9 +5,11 @@
 @cost : int
 @description : string
 @targeted : boolean
+@targetValidation : EffectInterface
+@exhaust : Bollean
 */
 export class AbstractCard{
-    constructor(name, type, cost, description, targeted){
+    constructor(name, type, cost, description, targeted, targetValidation = null, exhaust = false){
         if(new.target === AbstractCard){
              throw new Error("AbstractCard can't be instantiated");
         }
@@ -16,6 +18,8 @@ export class AbstractCard{
         this.cost = cost;
         this.description = description;
         this.targeted = targeted;
+        this.targetValidation = targetValidation;
+        this.exhaust = exhaust;
     }
 
     /*Abstract method

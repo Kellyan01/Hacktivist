@@ -5,19 +5,18 @@ import { AbstractCharacter } from "./AbstractCharacter.js";
 @name : string
 @type : string
 @health : int
+@maxHealth : int
 @energy : int
 @alert : int
-@data : int
 @deck : array of Card
 @discard : array of Card
 @hand : array of Card
 */
 export class Player extends AbstractCharacter{
-    constructor(name, type, health, energy, alert, data, deck){
-        super(name, type, health);
+    constructor(name, type, health, maxHealth, energy, alert, deck){
+        super(name, type, health, maxHealth);
         this.energy = energy;
         this.alert = alert;
-        this.data = data;
         this.deck = deck;
         this.discard = [];
         this.hand = [];

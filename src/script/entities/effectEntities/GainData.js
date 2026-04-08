@@ -29,7 +29,7 @@ export class GainData extends EffectInterface{
         //For each targets
         for(const target of targets){
             const data = this._gainData(target);
-            console.log(target.name+" obtient "+data+" datas");
+            console.log(user.name+" obtient "+data+" datas sur "+target.name);
         }
     }
 }

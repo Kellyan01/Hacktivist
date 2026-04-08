@@ -3,16 +3,18 @@
 @name : string
 @type : string
 @health : int
+@maxHealth : int
 @status : array of Status
 */
 export class AbstractCharacter{
-    constructor(name, type, health){
+    constructor(name, type, health, maxHealth){
         if(new.target === AbstractCharacter){
              throw new Error("AbstractCharacter can't be instantiated");
         }
         this.name = name;
         this.type = type;
         this.health = health;
+        this.maxHealth = maxHealth;
         this.status = [];
     }
 

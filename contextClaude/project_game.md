@@ -109,10 +109,14 @@ Features `entities`, `combat` et `interface` terminées. Détail complet dans `d
 
 **Décision game design — cumul des Status :** on garde les valeurs les plus grandes (`intensity` et `duration`). Pas de stacking. Révisable lors de l'équilibrage.
 
+**Décision game design — données par ennemi :** la jauge `data` est sur chaque ennemi, pas sur le joueur. Le scan cible un ennemi spécifique. Ouvre la porte à des cartes de scan de zone (peu de data sur tous) vs scan ciblé (beaucoup sur un).
+
+**Décision game design — exhaust :** propriété `exhaust` sur `AbstractCard`. Les cartes exploit (générées par scan) sont à usage unique.
+
 **Note :** `_verifyAlertAtRandom()` conservée inactive — détection probabiliste avant 100%, à activer lors de l'équilibrage.
 
 **Feuille de route (détail dans GDD section 11) :**
-- Court terme : **ciblage automatique** — `TargetByType` implémenté et branché sur `AttaqueBasique` ✅. Reste à créer `TargetByStatus` et `TargetByHealth`, puis migrer les cartes ciblées (`FrappeCybernetique`, `VirementAnonyme`)
+- Court terme : **ciblage** terminé ✅ — 3 effets de ciblage, ciblage auto, validation UI. **Données par ennemi** ✅ — `data` déplacé de Player vers Enemy, ScanBasique ciblé. **Exhaust** ✅ — cartes à usage unique (`VirementAnonyme`)
 - Moyen terme : nouveaux ennemis, nouvelles actions, nouvelles cartes, animations par carte
 - Long terme : carte BSP, récompenses, nœuds, méta-progression
 - Transversal : équilibrage jauge, dégâts, Status

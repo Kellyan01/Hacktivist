@@ -39,7 +39,7 @@ export class CombatEngine {
         if (index > -1) {
             this.player.hand.splice(index, 1);
             //add the card to the discard
-            this.player.discard.push(card);
+            if(!card.exhaust) this.player.discard.push(card);
         }
     }
 
@@ -212,7 +212,7 @@ export class CombatEngine {
     //Method to verify Data Threshold
     //@enemy : Enemy
     _verifyData(enemy){
-        if(enemy.dataThreshold !== undefined && this.player.data >= enemy.dataThreshold){
+        if(enemy.dataThreshold !== undefined && enemy.data >= enemy.dataThreshold){
             //Add exploit card to player deck
             const exploitCard = this._generateExploitCard(enemy);
             if(exploitCard !== null){

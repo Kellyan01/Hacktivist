@@ -116,15 +116,106 @@ Les effets de ciblage **filtrent** les cibles au lieu d'**appliquer** un effet. 
 
 ### Migration du ciblage
 
+**Ciblage automatique (actions ennemies) :**
+
 | Fichier | Statut | Notes |
 |---|---|---|
 | `AttaqueBasique.js` | ✅ migré | `new TargetByType("Hacktivist", 1)` — remplace le filtre inline |
 
 **Testé et fonctionnel dans le navigateur.**
 
+**Validation de ciblage (cartes joueur) :**
+
+Ajout de la propriété `targetValidation` sur `AbstractCard` (défaut : `null`). Pour les cartes ciblées (`targeted: true`), un effet de ciblage est assigné pour valider la cible choisie par le joueur.
+
+`CombatUI._targetEnemy()` vérifie `targetValidation` avant de jouer la carte. Si la cible est invalide (`effect()` retourne un tableau vide), un message "Cible non valide" s'affiche dans `#info` et la carte n'est pas jouée.
+
+| Fichier | Statut | Notes |
+|---|---|---|
+| `FrappeCybernetique.js` | ✅ migré | `targetValidation = new TargetByType("Human", "all")` |
+| `VirementAnonyme.js` | ✅ migré | `targetValidation = new TargetByType("Human", "all")` |
+
 ---
 
-### Prochains effets de ciblage à créer
+### TargetByStatus.js
 
-- `TargetByStatus` — filtre par présence/absence d'un status
-- `TargetByHealth` — filtre par seuil de PV
+**Fichier :** `src/script/entities/effectEntities/targetEffect/TargetByStatus.js`
+
+**Paramètres constructeur :**
+
+| Paramètre | Type | Description |
+|---|---|---|
+| `statusName` | string | Nom du status à vérifier |
+| `hasStatus` | boolean | `true` = garder ceux qui l'ont, `false` = garder ceux qui ne l'ont pas |
+| `count` | int \| `"all"` | Nombre de cibles à retourner |
+
+**Méthode `effect(user, targets)` :**
+1. Filtre par `some(s => s.name === this.statusName) === this.hasStatus`
+2. Limite au `count` via `slice()`
+3. Retourne le tableau filtré
+
+---
+
+### TargetByHealth.js
+
+**Fichier :** `src/script/entities/effectEntities/targetEffect/TargetByHealth.js`
+
+**Paramètres constructeur :**
+
+| Paramètre | Type | Description |
+|---|---|---|
+| `mode` | string | Mode de filtrage : `"above"`, `"below"`, `"max"`, `"min"`, `"full"` |
+| `threshold` | int \| null | Seuil pour `"above"` / `"below"`, `null` pour les autres modes |
+| `count` | int \| `"all"` | Nombre de cibles à retourner |
+
+**Modes :**
+
+| Mode | Description |
+|---|---|
+| `"above"` | PV > threshold |
+| `"below"` | PV < threshold |
+| `"max"` | Cible(s) avec le plus de PV |
+| `"min"` | Cible(s) avec le moins de PV, exclut les morts (health === 0) |
+| `"full"` | Cible(s) à pleine santé (health === maxHealth) |
+
+**Méthode `effect(user, targets)` :** switch sur `this.mode`, filtre, puis limite au `count` via `slice()`.
+
+**Modification associée :** `AbstractCharacter` — ajout de la propriété `maxHealth` au constructeur.
+
+---
+
+### Tableau récapitulatif des effets de ciblage
+
+| Fichier | Statut | Critère |
+|---|---|---|
+| `TargetByType.js` | ✅ | Type de personnage |
+| `TargetByStatus.js` | ✅ | Présence/absence d'un status |
+| `TargetByHealth.js` | ✅ | PV (seuil, max, min, full) |
+
+---
+
+### Changement de game design — Données par ennemi
+
+La jauge `data` a été déplacée de `Player` vers `Enemy`. Chaque ennemi possède sa propre jauge de données, pour refléter la collecte d'infos sur lui en particulier.
+
+**Modifications :**
+- `Player` — propriété `data` supprimée
+- `Enemy` — propriété `data = 0` ajoutée
+- `ScanBasique` — `targeted: true`, `targetValidation = new TargetByHealth("above", 0, 1)`. Le scan cible un ennemi spécifique.
+- `CombatEngine._verifyData()` — vérifie `enemy.data >= enemy.dataThreshold`
+- `CombatUI` — `data` retiré du rendu joueur, affiché par ennemi
+
+**Testé et fonctionnel.**
+
+---
+
+### Exhaust — carte à usage unique
+
+Ajout de la propriété `exhaust` sur `AbstractCard` (défaut : `false`). Si `true`, la carte est retirée du jeu après usage — ni défaussée, ni recyclée dans le deck.
+
+**Modifications :**
+- `AbstractCard` — propriété `exhaust = false` ajoutée au constructeur
+- `CombatEngine._discardCard()` — n'ajoute à la défausse que si `!card.exhaust`
+- `VirementAnonyme` — `exhaust = true`
+
+**Testé et fonctionnel.**

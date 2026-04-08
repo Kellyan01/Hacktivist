@@ -64,7 +64,9 @@ export class CombatUI{
             name.classList.add("enemy-name");
             const health = document.createElement("p");
             health.textContent = `PV : ${enemy.health}`;
-            health.classList.add("enemy-hp");
+            health.classList.add("enemy-hp");    
+            const data = document.createElement("p");
+            data.textContent = `Datas : ${enemy.data}`;
 
             //Regenerate Intention
             const intention = document.createElement("p");
@@ -91,7 +93,7 @@ export class CombatUI{
             }
 
             //Add Stat and Status to Enemy Article
-            enemyCard.append(name, health,intention, statusZone);
+            enemyCard.append(name, health, data, intention, statusZone);
             enemyCard.dataset.index = this.enemies.indexOf(enemy);
 
             //Add Enemy Article to Enemies Zone
@@ -147,13 +149,11 @@ export class CombatUI{
         health.textContent = `PV : ${this.player.health}`;
         const energy = document.createElement("p");
         energy.textContent = `Energie : ${this.player.energy}`;
-        const data = document.createElement("p");
-        data.textContent = `Datas : ${this.player.data}`;
         const alert = document.createElement("p");
         alert.textContent = `Niveau d'Alerte : ${this.player.alert}`;
 
         //Add Player Stats to Player Zone
-        this.playerStatsEl.append(name,health,energy,data,alert);
+        this.playerStatsEl.append(name,health,energy,alert);
 
         //Regenerate Player Status
         if(this.player.status.length <= 0){
@@ -188,6 +188,16 @@ export class CombatUI{
     async _targetEnemy(enemy){
         if (this.combatEngine.isOver) return;
         if(this.selectedCard){
+            //Verify Enemy Targeting Validation
+            if(this.selectedCard.targetValidation){
+                const validTargets = this.selectedCard.targetValidation.effect(this.selectedCard, [enemy]);
+                if(validTargets.length === 0) {
+                    const info = document.querySelector('#info');
+                    info.textContent = "Cible non valide";
+                    return;
+                }
+            }   
+            //Play Card
             const result = await this.combatEngine.playCard(this.selectedCard, [enemy]);
             this._handleCombatResult(result)
             this.selectedCard = null;
