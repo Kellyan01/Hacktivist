@@ -35,6 +35,7 @@ Hacktiviste/
     │   │   ├── cardEntities/
     │   │   ├── characterEntities/
     │   │   ├── effectEntities/     ← effets centralisés (Damage.js...)
+    │   │   │   └── targetEffect/  ← effets de ciblage (TargetByType.js...)
     │   │   └── Status.js
     │   ├── interfaces/
     │   │   └── EffectInterface.js  ← classe abstraite pour tous les effets
@@ -104,15 +105,14 @@ Structure réorganisée : `entities/cardEntities/` et `entities/characterEntitie
 
 Features `entities`, `combat` et `interface` terminées. Détail complet dans `documentation/hacktivistDevLog-Combat.md`.
 
-**Refactorisation `effectEntities` en cours** — voir `documentation/hacktivistDevLog-Refactoring.md`.
+**Refactorisation `effectEntities` terminée** — voir `documentation/hacktivistDevLog-Refactoring.md`.
 
 **Décision game design — cumul des Status :** on garde les valeurs les plus grandes (`intensity` et `duration`). Pas de stacking. Révisable lors de l'équilibrage.
 
 **Note :** `_verifyAlertAtRandom()` conservée inactive — détection probabiliste avant 100%, à activer lors de l'équilibrage.
 
 **Feuille de route (détail dans GDD section 11) :**
-- Priorité 0 : **refactorisation `effectEntities`** — migrer toutes les cartes et actions vers les classes Effect (voir devlog)
-- Court terme : ciblage automatique dans `enemy.act()` (priorité 1)
+- Court terme : **ciblage automatique** — `TargetByType` implémenté et branché sur `AttaqueBasique` ✅. Reste à créer `TargetByStatus` et `TargetByHealth`, puis migrer les cartes ciblées (`FrappeCybernetique`, `VirementAnonyme`)
 - Moyen terme : nouveaux ennemis, nouvelles actions, nouvelles cartes, animations par carte
 - Long terme : carte BSP, récompenses, nœuds, méta-progression
 - Transversal : équilibrage jauge, dégâts, Status

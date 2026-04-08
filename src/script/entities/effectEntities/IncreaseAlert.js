@@ -15,7 +15,7 @@ export class IncreaseAlert extends EffectInterface{
     Increase Alert Score
     @target : AbstractCharacter
     */
-    _reduceAlert(target){
+    _increaseAlert(target){
         target.alert += this.increase;
     }
 
@@ -29,7 +29,7 @@ export class IncreaseAlert extends EffectInterface{
         //For each targets
         for(const target of targets){
             console.log(user.name+" augmente le niveau d'alerte de "+target.name);
-            this._reduceAlert(target);
+            this._increaseAlert(target);
         }
     }
 }

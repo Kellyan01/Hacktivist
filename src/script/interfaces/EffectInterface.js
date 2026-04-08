@@ -10,6 +10,7 @@ export class EffectInterface{
     Abstract Method to use an effect
     @user : AbstractCard ||AbstractAction
     @targets : AbstractCharacter[]
+    @return : mixed
     */
     effect(user,targets){
         throw new Error("effect() must be implemented");

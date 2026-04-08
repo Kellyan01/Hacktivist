@@ -8,7 +8,7 @@ import { Status } from "../Status.js";
 @duration: int
 */
 export class ApplyStatus extends EffectInterface{
-    constructor(name, type, intensity, minIntensity, duration, minDuration){
+    constructor(name, type, intensity, minIntensity, duration, minDuration, typeTarget = null){
         super();
         this.name = name;
         this.type = type;
@@ -16,6 +16,7 @@ export class ApplyStatus extends EffectInterface{
         this.minIntensity = minIntensity;
         this.duration = duration;
         this.minDuration = minDuration;
+        this.typeTarget = typeTarget;
     }
 
     /*
@@ -24,12 +25,17 @@ export class ApplyStatus extends EffectInterface{
     */
     //Génère 5 points de bouclier pour le joueur pendant 3 tours
     _generateStatus(target){
+        //Verify if Target can be affect by Status
+        if(this.typeTarget && target.type !== this.typeTarget ){
+            throw new Error("Cette cible ne peut pas être affectée par ce Status.");
+        
+        }
         //Verify if the Status exist
         let status = target.status.find(status => status.name === this.name)
         if(status){
             //take the max intensity and the max duration
-            status.intensity = Math.max(this.minIntensity, status.intensity);
-            status.duration = Math.max(this.minDuration, status.duration);
+            status.intensity = Math.max(this.intensity, status.intensity);
+            status.duration = Math.max(this.duration, status.duration);
             return status;
         }
         else{

@@ -64,16 +64,67 @@ Classes concrètes implémentant `EffectInterface`. Chaque classe encapsule un a
 |---|---|---|
 | `AttaqueBasique.js` | ✅ migré | `new Damage(6, "Matrice", "Shield", 0, 0)` |
 | `FrappeCybernetique.js` | ✅ migré | `new Damage(5, "Matrice", "Shield", 0, 0)` |
-| `FirewallPersonnel.js` | ⏳ à migrer | Effect `ApplyStatus` à créer |
-| `VirementAnonyme.js` | ⏳ à migrer | Effect `ApplyStatus` à créer |
-| `Brouilleur.js` | ⏳ à migrer | Effect `ReduceAlert` à créer |
-| `ScanBasique.js` | ⏳ à migrer | Effect `GainData` à créer |
+| `FirewallPersonnel.js` | ✅ migré | `new ApplyStatus("Shield", "Buff", 5, 5, 3, 3)` |
+| `VirementAnonyme.js` | ✅ migré | `new ApplyStatus("Neutralized", "Debuff", 1, 1, 10000, 10000, "Human")` |
+| `Brouilleur.js` | ✅ migré | `new ReduceAlert(15, 15)` |
+| `ScanBasique.js` | ✅ migré | `new GainData(2, 2)` + `new IncreaseAlert(8, 8)` |
+
+### Bugs corrigés
+
+- `Damage._dealDamage()` — propriété `typesListNotAffected` renommée en `typeNotAffected`
+- `ApplyStatus._generateStatus()` — condition `typeTarget` inversée (`!this.typeTarget` → `this.typeTarget`)
+- `ApplyStatus._generateStatus()` — comparaison avec `minIntensity`/`minDuration` corrigée en `this.intensity`/`this.duration`
+- `IncreaseAlert._reduceAlert()` — méthode renommée `_increaseAlert()`
 
 ---
 
-## Prochaine étape
+## Refactorisation des effets applicatifs terminée — 2026-04-07
 
-Créer les classes Effect manquantes et migrer les cartes restantes :
-1. `ApplyStatus` — pour `FirewallPersonnel` et `VirementAnonyme`
-2. `ReduceAlert` — pour `Brouilleur`
-3. `GainData` — pour `ScanBasique`
+---
+
+## Session 2 — 2026-04-08
+
+### Effets de ciblage (targetEffect/)
+
+**Nouveau sous-dossier :** `src/script/entities/effectEntities/targetEffect/`
+
+Les effets de ciblage **filtrent** les cibles au lieu d'**appliquer** un effet. Ils retournent un tableau réduit de cibles, chaînable avec d'autres effets.
+
+**Décision d'architecture :** `effect()` dans `EffectInterface` autorise désormais un retour mixte (`@return : mixed`). Les effets de ciblage retournent un `AbstractCharacter[]`, les effets applicatifs retournent `void`.
+
+**Chaînage manuel :** pas d'automatisation pour l'instant. C'est l'action/carte qui appelle les filtres dans l'ordre, puis passe le résultat aux effets applicatifs.
+
+---
+
+### TargetByType.js
+
+**Fichier :** `src/script/entities/effectEntities/targetEffect/TargetByType.js`
+
+**Paramètres constructeur :**
+
+| Paramètre | Type | Description |
+|---|---|---|
+| `type` | string | Type de personnage à cibler (ex: `"Hacktivist"`, `"Human"`) |
+| `count` | int \| `"all"` | Nombre de cibles à retourner |
+
+**Méthode `effect(user, targets)` :**
+1. Filtre par `target.type === this.type`
+2. Limite au `count` via `slice()` si ce n'est pas `"all"`
+3. Retourne le tableau filtré
+
+---
+
+### Migration du ciblage
+
+| Fichier | Statut | Notes |
+|---|---|---|
+| `AttaqueBasique.js` | ✅ migré | `new TargetByType("Hacktivist", 1)` — remplace le filtre inline |
+
+**Testé et fonctionnel dans le navigateur.**
+
+---
+
+### Prochains effets de ciblage à créer
+
+- `TargetByStatus` — filtre par présence/absence d'un status
+- `TargetByHealth` — filtre par seuil de PV
