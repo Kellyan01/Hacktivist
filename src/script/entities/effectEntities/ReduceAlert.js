@@ -2,22 +2,19 @@ import { EffectInterface } from "../../interfaces/EffectInterface.js";
 //Class for Alert Reduction Effect
 /*
 @reduction : int
-@minReduction : int
 */
 export class ReduceAlert extends EffectInterface{
-    constructor(reduction, minReduction){
+    constructor(reduction){
         super();
         this.reduction = reduction;
-        this.minReduction = minReduction;
     }
 
     /*
     Reduce Alert Score
-    @damage : int
     @target : AbstractCharacter
     */
     _reduceAlert(target){
-        target.alert -= this.reduction;
+        target.modifyAlert(-this.reduction);
     }
 
     /*

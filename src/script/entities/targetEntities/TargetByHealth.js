@@ -1,11 +1,11 @@
-import { EffectInterface } from "../../../interfaces/EffectInterface.js";
+import { TargetFilterInterface } from "../../interfaces/TargetFilterInterface.js";
 //Class for Target By Health Effect
 /*
 @mode : string
 @threshold : int | null
 @count : int | "all"
 */
-export class TargetByHealth extends EffectInterface{
+export class TargetByHealth extends TargetFilterInterface{
     constructor(mode, threshold, count){
         super();
         this.mode = mode;
@@ -14,11 +14,11 @@ export class TargetByHealth extends EffectInterface{
     }
 
     /*
-    Method to use an effect
+    Method to filter target
     @user : AbstractCard ||AbstractAction
     @targets : AbstractCharacter[]
     */
-    effect(user,targets){
+    filter(user,targets){
         //Verify mode filter
         switch(this.mode){
             case "above" :

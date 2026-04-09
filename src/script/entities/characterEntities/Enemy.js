@@ -31,4 +31,12 @@ export class Enemy extends AbstractCharacter{
         console.log("A mon tour d'agir !");
         this.intention.effect(this, [player, ...enemies]);
     }
+
+    /*
+    Method to modify Enemy Datas
+    @amout : int
+    */
+   modifyData(amount){
+    this.data = Math.max(0, this.data + amount);
+   }
 }

@@ -1,6 +1,7 @@
 import {Player} from "../entities/characterEntities/Player.js";
 import {Enemy} from "../entities/characterEntities/Enemy.js";
 import { VirementAnonyme } from "../entities/cardEntities/VirementAnonyme.js";
+import {MODE, PHASE, STATUS, TYPE_CARD, TYPE_VULNERABILITY} from "../constants.js";
 
 
 //Class that handles combat between the player and the enemy
@@ -24,10 +25,10 @@ export class CombatEngine {
         this.energyPerTurn = energyPerTurn;
         this.handSize = handSize;
         this.turnCount = 0;
-        this.mode = "Ghost";
+        this.mode = MODE.GHOST;
         this.isOver = false;
         this.onAction = onAction;
-        this.phase = "playerTurn";
+        this.phase = PHASE.PLAYER_TURN;
     }
 
     //PRIVATE METHODS
@@ -35,35 +36,6 @@ export class CombatEngine {
     //@enemy : Enemy
     _changeIntention(enemy){
         enemy.intention = enemy.actionsList[Math.floor(Math.random()*enemy.actionsList.length)];
-    }
-
-    //Method to discard a Card
-    //@card : AbstractCard
-    _discardCard(card) {
-        //remove the card from the hand
-        const index = this.player.hand.indexOf(card);
-        if (index > -1) {
-            this.player.hand.splice(index, 1);
-            //add the card to the discard
-            if(!card.exhaust) this.player.discard.push(card);
-        }
-    }
-
-    //Method to draw cards
-    _drawCards() {
-        //if the deck is empty, shuffle discard into deck
-        if (this.player.deck.length === 0) {
-            this._shuffleDiscardInDeck();
-        }
-
-        //if hand size is reached or deck is empty, stop drawing
-        if(this.player.hand.length === this.handSize || this.player.deck.length === 0) return;
-
-        //draw a card
-        this.player.hand.push(this.player.deck.pop());
-        
-        //call the method recursively until hand size is reached
-        this._drawCards();
     }
 
     //Method to make the enemy act then change intention
@@ -77,17 +49,17 @@ export class CombatEngine {
     //Method to handle enemy turn
     async _enemyTurn(){
         //change combat phase for enemyTurn
-        this.phase = "enemyTurn";
+        this.phase = PHASE.ENEMY_TURN;
         //if ghost mode, verify alert
-        if(this.mode === "Ghost"){
+        if(this.mode === MODE.GHOST){
             //a update alert
             this._updateAlert();
             //b. verify alert
-            this._verifyAlert() ? this.mode = "RedAlert" : null;
+            this._verifyAlert() ? this.mode = MODE.RED_ALERT : null;
         }
 
         //if RedAlert mode -> enemy actions
-        if(this.mode === "RedAlert"){
+        if(this.mode === MODE.RED_ALERT){
             //a. update satus
             for(const enemy of this.enemies){
                 this._updateStatus(enemy);
@@ -95,7 +67,7 @@ export class CombatEngine {
             //b. enemy actions if not 0 health or neutralized 
             for(const enemy of this.enemies){
                 //verify neutralized status
-                const isNeutralized = enemy.status.some(status => status.name === "Neutralized");
+                const isNeutralized = enemy.status.some(status => status.name === STATUS.NEUTRALIZED);
                 if(enemy.health > 0 && !isNeutralized){
                     await this._enemyAction(enemy);
                     //Verify victory condition
@@ -113,7 +85,7 @@ export class CombatEngine {
     //@enemy : Enemy
     _generateExploitCard(enemy){
         switch(enemy.vulnerability){
-            case "Financial":
+            case TYPE_VULNERABILITY.FINANCIAL:
                 return new VirementAnonyme();
             default:
                 return null;
@@ -128,7 +100,7 @@ export class CombatEngine {
     //Method to handle player turn
     _playerTurn(){
         ////Change combat phase for playerTurn
-        this.phase = "playerTurn";
+        this.phase = PHASE.PLAYER_TURN;
         //Enemy datas
         //a. show intentions
         this._showIntentions();
@@ -138,42 +110,24 @@ export class CombatEngine {
         //b. reinitialize energy
         this._initializeEnergy();
         //c. draw cards
-        this._drawCards();
+        this.player.deck.draw(this.handSize);
     }
 
     //Method to show Enemy Intentions
     _showIntentions(){
         for(const enemy of this.enemies){
             //show intention if not 0 health or neutralized
-            const isNeutralized = enemy.status.some(status => status.name === "Neutralized");
+            const isNeutralized = enemy.status.some(status => status.name === STATUS.NEUTRALIZED);
             if(enemy.health > 0 && !isNeutralized){
                 console.log(`${enemy.name} intends to ${enemy.intention.description}`);
             }
         }
     }
 
-    //Method pour shuffle the player deck
-    _shuffleDeck() {
-        //for each card in the deck, swap it with a random card int the deck
-        for(let i = 0; i < this.player.deck.length; i++){
-            const randomIndex = Math.floor(Math.random()*this.player.deck.length);
-            [this.player.deck[i], this.player.deck[randomIndex]] = [this.player.deck[randomIndex], this.player.deck[i]];
-        }
-    }
-
-    //Method to shuffle Discard into Deck
-    _shuffleDiscardInDeck() {
-        //add discard to deck
-        this.player.deck = this.player.deck.concat(this.player.discard);
-        //empty discard
-        this.player.discard = [];
-        //shuffle deck
-        this._shuffleDeck();
-    }
 
     //Method to inceade alert
     _updateAlert() {
-        this.player.alert = Math.min(100, this.player.alert + 10);
+        this.player.modifyAlert(10);
     }
 
     //Method to update Status
@@ -226,33 +180,53 @@ export class CombatEngine {
             //Add exploit card to player deck
             const exploitCard = this._generateExploitCard(enemy);
             if(exploitCard !== null){
-                this.player.deck.push(exploitCard);
+                this.player.deck.cards.push(exploitCard);
                 console.log(`Data threshold reached for ${enemy.name}. ${exploitCard.name} added to deck.`);
                 //All data was found for this enemy -> Change enemy.dataThreshold
                 enemy.dataThreshold = undefined;
             }
             //shuffle deck to make sure the card can be drawn
-            this._shuffleDeck();
+            this.player.deck.shuffle();
             return enemy.vulnerability;
         };
     }
 
 
     //PRUBLIC METHODS
+    //Method to Handle Discard Phase
+    discardPhase(){
+        //change combat phase for discardPhase
+        this.phase = PHASE.DISCARD;
+
+    }
+
+    //Method to end combat
+    endFight(){
+        this.isOver = true;
+    }
+
+    //Method to Launch Discard during Discard Phase
+    //@cards : array[AbstractCard]
+    launchDiscard(cards){
+        for(const card of cards){
+                this.player.deck.discardCard(card);
+        }
+    }
+
     //Method to lauch the combat
     async launchFight(){
         //initialize combat phase for playerTurn
-        this.phase = "playerTurn"; 
+        this.phase = PHASE.PLAYER_TURN; 
         //1. shuffle the player deck
-        this._shuffleDeck();
+        this.player.deck.shuffle();
         //2. Ghost Mode
-        this.mode = "Ghost";
+        this.mode = MODE.GHOST;
         //3. Initialize enemy Inentions
         for(const enemy of this.enemies){
             this._changeIntention(enemy);
         }
         //4. Player Started Hand
-        this._drawCards();
+        this.player.deck.draw(this.handSize);
         //5. Initialize Energy
         this._initializeEnergy();
         //6. Initialize Turn Count
@@ -260,7 +234,7 @@ export class CombatEngine {
         //7. Handle initial player turn if needed
         if(!this.initPlayer){
             //Change combat phase for enemyTurn
-            this.phase = "enemyTurn";
+            this.phase = PHASE.ENEMY_TURN;
             //Enemy turn
             //a. Enemy Act
             for(const enemy of this.enemies){
@@ -275,6 +249,44 @@ export class CombatEngine {
             //b. then change turn
             this.switchTurn();
         }
+    }
+
+    //Method to play card
+    /*
+    @card : AbstractCard
+    @targets : AbstractCharacter[]
+    */
+    playCard(card, targets = []){
+        //1. Verify that player has enough energy to play the card
+        if(this.player.energy < card.cost){
+            throw new Error("Not enough energy to play this card.");
+        }
+        //2. Deduct the energy cost of the card
+        this.player.energy -= card.cost;
+        //3. Play the card effect
+        card.effect(this.player, targets);
+        //4. Discard the card
+        this.player.deck.discardCard(card);
+        //5. Verify victory condition
+        const winner = this.verifyVictory();
+        if(winner){
+            this.endFight();
+            return winner;
+        }
+        //7. Verif Data
+        for(const enemy of this.enemies){
+            this._verifyData(enemy);
+        }
+        //6. Verify Ghost Mode
+        if(this.mode === MODE.GHOST && card.type !== TYPE_CARD.MATRIX && card.type !==TYPE_CARD.GROUND){
+            this.switchGhostToRedAlert();
+        }
+    }
+
+    //Method to switch from Ghost to Red Alert mode
+    switchGhostToRedAlert(){
+        this.mode = MODE.RED_ALERT;
+        console.log("You have been detected! Switching to Red Alert mode.");
     }
 
     //Method to change turn
@@ -304,12 +316,6 @@ export class CombatEngine {
         }
     }
 
-    //Method to switch from Ghost to Red Alert mode
-    switchGhostToRedAlert(){
-        this.mode = "RedAlert";
-        console.log("You have been detected! Switching to Red Alert mode.");
-    }
-
     //Method to verify combat winner
     verifyVictory(){
         //1. if player health is less than or equal to 0, enemies win
@@ -317,64 +323,10 @@ export class CombatEngine {
             return this.enemies;
         }
         //2. if all enemies have 0 health or are neutralized, player wins
-        if(this.enemies.every(enemy => enemy.health <= 0 || enemy.status.some(status => status.name === "Neutralized"))){
+        if(this.enemies.every(enemy => enemy.health <= 0 || enemy.status.some(status => status.name === STATUS.NEUTRALIZED))){
             return this.player;
         }
         //3. else, combat is not over
         return null;
-    }
-
-    //Method to end combat
-    endFight(){
-        this.isOver = true;
-        this.player = null;
-        this.enemies = null;
-    }
-
-    //Method to play card
-    /*
-    @card : AbstractCard
-    @targets : AbstractCharacter[]
-    */
-    playCard(card, targets = []){
-        //1. Verify that player has enough energy to play the card
-        if(this.player.energy < card.cost){
-            throw new Error("Not enough energy to play this card.");
-        }
-        //2. Deduct the energy cost of the card
-        this.player.energy -= card.cost;
-        //3. Play the card effect
-        card.effect(this.player, targets);
-        //4. Discard the card
-        this._discardCard(card);
-        //5. Verify victory condition
-        const winner = this.verifyVictory();
-        if(winner){
-            this.endFight();
-            return winner;
-        }
-        //7. Verif Data
-        for(const enemy of this.enemies){
-            this._verifyData(enemy);
-        }
-        //6. Verify Ghost Mode
-        if(this.mode === "Ghost" && card.type !== "Matrice" && card.type !=="Terrain"){
-            this.switchGhostToRedAlert();
-        }
-    }
-
-    //Method to Handle Discard Phase
-    discardPhase(){
-        //change combat phase for discardPhase
-        this.phase = "discardPhase";
-
-    }
-
-    //Method to Launch Discard during Discard Phase
-    //@cards : array[AbstractCard]
-    launchDiscard(cards){
-        for(const card of cards){
-                this._discardCard(card);
-        }
     }
 }

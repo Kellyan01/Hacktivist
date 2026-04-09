@@ -26,4 +26,12 @@ export class AbstractCharacter{
     act(player,enemies){
         throw new Error("act() must be implemented");
     }
+
+    /*
+    Method to modify character health
+    @amount : int
+    */
+   modifyHealth(amount){
+    this.health = Math.max(0, Math.min(this.maxHealth, this.health + amount));
+   }
 }

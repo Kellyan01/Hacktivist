@@ -38,7 +38,7 @@ export class Damage extends EffectInterface{
         //Calculate damage
         const damageToDeal = Math.max(this.minDamage, this.damage - armor);
         //Apply damage
-        target.health = Math.max(this.minHealth, target.health - damageToDeal);
+        target.modifyHealth(-damageToDeal);
         //Return damage
         return damageToDeal;
     }

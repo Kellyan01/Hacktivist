@@ -8,14 +8,12 @@ import { Status } from "../Status.js";
 @duration: int
 */
 export class ApplyStatus extends EffectInterface{
-    constructor(name, type, intensity, minIntensity, duration, minDuration, typeTarget = null){
+    constructor(name, type, intensity, duration, typeTarget = null){
         super();
         this.name = name;
         this.type = type;
         this.intensity = intensity;
-        this.minIntensity = minIntensity;
         this.duration = duration;
-        this.minDuration = minDuration;
         this.typeTarget = typeTarget;
     }
 

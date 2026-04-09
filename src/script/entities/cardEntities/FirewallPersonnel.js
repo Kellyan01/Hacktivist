@@ -1,11 +1,12 @@
 import {AbstractCard} from "./AbstractCard.js";
 import {ApplyStatus} from "../effectEntities/ApplyStatus.js";
+import { TYPE_CARD, STATUS, TYPE_STATUS } from "../../constants.js";
 
 //Class pour la carte Firewall Personnel
 export class FirewallPersonnel extends AbstractCard{
     constructor() {
-        super("Firewall Personnel", "Confrontation", 1,"Gagne 5 points de Bouclier pendant 3 tours.",false);
-        this.statusEffect = new ApplyStatus("Shield", "Buff", 5, 5, 3, 3);
+        super("Firewall Personnel", TYPE_CARD.COMBAT, 1,"Gagne 5 points de Bouclier pendant 3 tours.",false);
+        this.statusEffect = new ApplyStatus(STATUS.SHIELD, TYPE_STATUS.BUFF, 5, 3);
         this.description = `Gagne ${this.statusEffect.intensity} points de Bouclier pendant ${this.statusEffect.duration} tours.`
     }
 

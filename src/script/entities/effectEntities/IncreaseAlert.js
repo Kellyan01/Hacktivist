@@ -2,13 +2,11 @@ import { EffectInterface } from "../../interfaces/EffectInterface.js";
 //Class for Alert Increase Effect
 /*
 @increase : int
-@minIncrease : int
 */
 export class IncreaseAlert extends EffectInterface{
-    constructor(increase, minIncrease){
+    constructor(increase){
         super();
         this.increase = increase;
-        this.minIncrease = minIncrease;
     }
 
     /*
@@ -16,7 +14,7 @@ export class IncreaseAlert extends EffectInterface{
     @target : AbstractCharacter
     */
     _increaseAlert(target){
-        target.alert += this.increase;
+        target.modifyAlert(this.increase);
     }
 
     /*

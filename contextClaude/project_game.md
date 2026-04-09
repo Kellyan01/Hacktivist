@@ -31,14 +31,17 @@ Hacktiviste/
 └── src/
     ├── script/
     │   ├── entities/
+    │   │   ├── AbstractPlayable.js     ← parent commun cartes/actions
+    │   │   ├── Deck.js                 ← gestion pioche/main/défausse
+    │   │   ├── Status.js
     │   │   ├── actionEntities/
     │   │   ├── cardEntities/
     │   │   ├── characterEntities/
-    │   │   ├── effectEntities/     ← effets centralisés (Damage.js...)
-    │   │   │   └── targetEffect/  ← effets de ciblage (TargetByType.js...)
-    │   │   └── Status.js
+    │   │   ├── effectEntities/         ← effets applicatifs (Damage.js...)
+    │   │   └── targetEntities/         ← filtres de ciblage (TargetByType.js...)
     │   ├── interfaces/
-    │   │   └── EffectInterface.js  ← classe abstraite pour tous les effets
+    │   │   ├── EffectInterface.js      ← effets applicatifs (void)
+    │   │   └── TargetFilterInterface.js ← filtres de ciblage (AbstractCharacter[])
     │   ├── game/
     │   └── script.js
     └── style/
@@ -114,6 +117,33 @@ Features `entities`, `combat`, `interface` et `refactorisation effectEntities` t
 **Décision game design — défausse partielle :** en fin de tour, le joueur choisit quelles cartes défausser. Pas de défausse totale forcée. Pas de limite pour l'instant — à activer lors de l'équilibrage. Variante "max cartes en main" (style Magic) envisagée.
 
 **Note :** `_verifyAlertAtRandom()` conservée inactive — détection probabiliste avant 100%, à activer lors de l'équilibrage.
+
+---
+
+### Refactorisation architecturale — terminée 2026-04-09
+
+Analyse structurelle réalisée. 8 points faibles identifiés, 8 recommandations produites. Détail complet dans `documentation/hacktivistDevLog-Refactoring-Architecture.md`.
+
+**Recommandations urgentes — toutes terminées ✅ :**
+1. R4 — Dead code supprimé (paramètres `min*`) ✅
+2. R5 — `endFight()` nettoyé ✅
+3. R1 — Interfaces séparées (`EffectInterface` / `TargetFilterInterface`) ✅
+4. R6 — Parent commun `AbstractPlayable` ✅
+5. R2 — Mutations encapsulées (`modifyHealth`, `modifyAlert`, `modifyData`) ✅
+6. R3 — Classe `Deck` extraite (Fisher-Yates, `draw`, `discardCard`, `recycleDiscard`) ✅
+
+**Changements structurels notables :**
+- `targetEntities/` — nouveau dossier, séparé de `effectEntities/`
+- `AbstractPlayable.js` — parent commun `AbstractCard` / `AbstractAction`
+- `Deck.js` — `Player` possède un `Deck` au lieu de 3 tableaux
+- `TargetFilterInterface.js` — interface dédiée, méthode `filter()` distincte de `effect()`
+
+7. R7 — Constantes (`constants.js`, 8 objets) ✅
+
+**Prioritaire (prochaine session) :**
+8. R8 — Système d'événements (EventEmitter) — à faire avant tout ajout de contenu
+
+---
 
 **Feuille de route (détail dans GDD section 11) :**
 - Court terme : **ciblage** ✅, **données par ennemi** ✅, **exhaust** ✅, **défausse partielle** ✅. Reste : limite de défausse, limite de cartes en main

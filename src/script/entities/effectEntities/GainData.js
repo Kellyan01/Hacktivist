@@ -2,13 +2,11 @@ import { EffectInterface } from "../../interfaces/EffectInterface.js";
 //Class for Gain Data Effect
 /*
 @gain : int
-@minGain : int
 */
 export class GainData extends EffectInterface{
-    constructor(gain, minGain){
+    constructor(gain){
         super();
         this.gain = gain;
-        this.minGain = minGain;
     }
 
     /*
@@ -16,7 +14,7 @@ export class GainData extends EffectInterface{
     @target : AbstractCharacter
     */
     _gainData(target){
-        target.data += this.gain;
+        target.modifyData(this.gain);
         return this.gain;
     }
 

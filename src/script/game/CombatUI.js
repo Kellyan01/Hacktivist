@@ -1,4 +1,4 @@
-
+import {MODE, PHASE} from '../constants.js';
 //Class for Combat User Interface
 /*
 @combatEngine : CombatEngine
@@ -51,7 +51,7 @@ export class CombatUI{
 
     //Method for render the Combat Mode
     _renderMode(){
-        if(this.combatEngine.mode === "Ghost"){
+        if(this.combatEngine.mode === MODE.GHOST){
             this.gameEl.classList.add("ghost-mode");
             this.gameEl.classList.remove("red-alert-mode");
         }else{
@@ -120,7 +120,7 @@ export class CombatUI{
         this.handZoneEl.replaceChildren();
 
         //Regenerate the Hand Card
-        for(const card of this.player.hand){
+        for(const card of this.player.deck.hand){
             //Create <article> for the card
             const handCard = document.createElement("article");
             handCard.classList.add("card");
@@ -141,7 +141,7 @@ export class CombatUI{
             }
 
             //Verify if it's Discard Phase
-            if(this.combatEngine.phase === "discardPhase"){
+            if(this.combatEngine.phase === PHASE.DISCARD){
                 //Add class .selected to .card if card is in selectedToDiscard
                 if(this.selectedToDiscard.includes(card)){
                     handCard.classList.add("selected");
@@ -150,7 +150,7 @@ export class CombatUI{
 
             //Add Stat to Hand Card Article
             handCard.append(name, type, cost, description);
-            handCard.dataset.index = this.player.hand.indexOf(card);
+            handCard.dataset.index = this.player.deck.hand.indexOf(card);
 
             //Add Hand Card Article to Player Hand Zone
             this.handZoneEl.append(handCard);
@@ -194,10 +194,10 @@ export class CombatUI{
             this.btnDiscard.style.display = "none";
             this.btnEndTurn.style.display = "none";
         }else{
-            if(this.combatEngine.phase === "discardPhase"){
+            if(this.combatEngine.phase === PHASE.DISCARD){
                 this.btnDiscard.style.display = "inline";
                 this.btnEndTurn.style.display = "none";
-            }else if(this.combatEngine.phase === "playerTurn"){
+            }else if(this.combatEngine.phase === PHASE.PLAYER_TURN){
                 this.btnDiscard.style.display = "none";
                 this.btnEndTurn.style.display = "inline";
             }else{
@@ -244,7 +244,7 @@ export class CombatUI{
         if(this.selectedCard){
             //Verify Enemy Targeting Validation
             if(this.selectedCard.targetValidation){
-                const validTargets = this.selectedCard.targetValidation.effect(this.selectedCard, [enemy]);
+                const validTargets = this.selectedCard.targetValidation.filter(this.selectedCard, [enemy]);
                 if(validTargets.length === 0) {
                     const info = document.querySelector('#info');
                     info.textContent = "Cible non valide";
@@ -269,11 +269,11 @@ export class CombatUI{
             const cardEl = event.target.closest(".card");
             if (!cardEl) return;
             const index = cardEl.dataset.index;
-            const card = this.player.hand[index];
-            if(this.combatEngine.phase === "playerTurn"){
+            const card = this.player.deck.hand[index];
+            if(this.combatEngine.phase === PHASE.PLAYER_TURN){
                 this._selectCard(card);
             }
-            else if(this.combatEngine.phase === "discardPhase"){
+            else if(this.combatEngine.phase === PHASE.DISCARD){
                 this._selectCardToDiscard(card);
             }
         })

@@ -1,11 +1,11 @@
-import { EffectInterface } from "../../../interfaces/EffectInterface.js";
+import { TargetFilterInterface } from "../../interfaces/TargetFilterInterface.js";
 //Class for Target By Status Effect
 /*
 @statusName : string
 @hasStatus : boolean
 @count : int | "all"
 */
-export class TargetByStatus extends EffectInterface{
+export class TargetByStatus extends TargetFilterInterface{
     constructor(statusName, hasStatus, count){
         super();
         this.statusName = statusName;
@@ -14,11 +14,11 @@ export class TargetByStatus extends EffectInterface{
     }
 
     /*
-    Method to use an effect
+    Method to filter targets
     @user : AbstractCard ||AbstractAction
     @targets : AbstractCharacter[]
     */
-    effect(user,targets){
+    filter(user,targets){
         //filter targets by type
         targets = targets.filter(target => {
             return target.status.some(status => status.name === this.statusName) === this.hasStatus;
