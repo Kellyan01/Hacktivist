@@ -299,12 +299,15 @@ export class CombatUI{
 
         //Click on button to End Turn
         this.btnEndTurn.addEventListener("click", async event => {
-            //const result = await this.combatEngine.switchTurn();
-            //this._handleCombatResult(result)
-
-            //Enter in Discard Phase
-            this.combatEngine.discardPhase();
-            this.render();
+            if(this.player.deck.hand.length === 0){
+                const result = await this.combatEngine.switchTurn();
+                this._handleCombatResult(result);
+                this.render();
+            }else{
+                //Enter in Discard Phase
+                this.combatEngine.discardPhase();
+                this.render();
+            }
         })
 
         //Click on button to Discard Cards during Discard Phase
