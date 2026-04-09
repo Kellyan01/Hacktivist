@@ -23,9 +23,13 @@ const player = new Player("John Doe","Hacktivist",50,50,3,0,playerDeck);
 const gardeDeNuit = new GardeDeNuit();
 const garde = new GardeDeNuit()
 
+//Declare ui for Combat UI
+let ui;
+
 //3. Create a combat engine and start the combat
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const combatEngine = new CombatEngine(player, [gardeDeNuit,garde], true, 3, 3, async enemy => {
+    ui.render()
     const info = document.querySelector("#info");
     info.textContent = `${enemy.name} effectue : ${enemy.intention.name}`;
     await sleep(1500);
@@ -34,7 +38,7 @@ const combatEngine = new CombatEngine(player, [gardeDeNuit,garde], true, 3, 3, a
 });
 
 //4. Create Combat UI
-const ui = new CombatUI(combatEngine,player,[gardeDeNuit,garde]);
+ui = new CombatUI(combatEngine,player,[gardeDeNuit,garde]);
 
 //5. Launch Combat, then UI
 combatEngine.launchFight();

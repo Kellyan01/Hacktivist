@@ -10,6 +10,11 @@ import { VirementAnonyme } from "../entities/cardEntities/VirementAnonyme.js";
 @initPlayer : boolean
 @energyPerTurn : number
 @handSize : number
+@turnCount : int
+@mode : string "Ghost" | "RedAlert"
+@isOver : boolean
+@onAction
+@phase : string "playerTurn" | "discardPhase" | "enemyTurn"
 */
 export class CombatEngine {
     constructor(player, enemies, initPlayer, energyPerTurn, handSize, onAction = null) {
@@ -22,6 +27,7 @@ export class CombatEngine {
         this.mode = "Ghost";
         this.isOver = false;
         this.onAction = onAction;
+        this.phase = "playerTurn";
     }
 
     //PRIVATE METHODS
@@ -70,6 +76,8 @@ export class CombatEngine {
 
     //Method to handle enemy turn
     async _enemyTurn(){
+        //change combat phase for enemyTurn
+        this.phase = "enemyTurn";
         //if ghost mode, verify alert
         if(this.mode === "Ghost"){
             //a update alert
@@ -119,6 +127,8 @@ export class CombatEngine {
 
     //Method to handle player turn
     _playerTurn(){
+        ////Change combat phase for playerTurn
+        this.phase = "playerTurn";
         //Enemy datas
         //a. show intentions
         this._showIntentions();
@@ -231,6 +241,8 @@ export class CombatEngine {
     //PRUBLIC METHODS
     //Method to lauch the combat
     async launchFight(){
+        //initialize combat phase for playerTurn
+        this.phase = "playerTurn"; 
         //1. shuffle the player deck
         this._shuffleDeck();
         //2. Ghost Mode
@@ -247,6 +259,8 @@ export class CombatEngine {
         this.turnCount = 0;
         //7. Handle initial player turn if needed
         if(!this.initPlayer){
+            //Change combat phase for enemyTurn
+            this.phase = "enemyTurn";
             //Enemy turn
             //a. Enemy Act
             for(const enemy of this.enemies){
@@ -346,6 +360,21 @@ export class CombatEngine {
         //6. Verify Ghost Mode
         if(this.mode === "Ghost" && card.type !== "Matrice" && card.type !=="Terrain"){
             this.switchGhostToRedAlert();
+        }
+    }
+
+    //Method to Handle Discard Phase
+    discardPhase(){
+        //change combat phase for discardPhase
+        this.phase = "discardPhase";
+
+    }
+
+    //Method to Launch Discard during Discard Phase
+    //@cards : array[AbstractCard]
+    launchDiscard(cards){
+        for(const card of cards){
+                this._discardCard(card);
         }
     }
 }

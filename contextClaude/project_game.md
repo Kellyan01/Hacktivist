@@ -103,9 +103,7 @@ Structure réorganisée : `entities/cardEntities/` et `entities/characterEntitie
 
 ## Prochaine étape
 
-Features `entities`, `combat` et `interface` terminées. Détail complet dans `documentation/hacktivistDevLog-Combat.md`.
-
-**Refactorisation `effectEntities` terminée** — voir `documentation/hacktivistDevLog-Refactoring.md`.
+Features `entities`, `combat`, `interface` et `refactorisation effectEntities` terminées. Détail complet dans les devlogs de `documentation/`.
 
 **Décision game design — cumul des Status :** on garde les valeurs les plus grandes (`intensity` et `duration`). Pas de stacking. Révisable lors de l'équilibrage.
 
@@ -113,10 +111,12 @@ Features `entities`, `combat` et `interface` terminées. Détail complet dans `d
 
 **Décision game design — exhaust :** propriété `exhaust` sur `AbstractCard`. Les cartes exploit (générées par scan) sont à usage unique.
 
+**Décision game design — défausse partielle :** en fin de tour, le joueur choisit quelles cartes défausser. Pas de défausse totale forcée. Pas de limite pour l'instant — à activer lors de l'équilibrage. Variante "max cartes en main" (style Magic) envisagée.
+
 **Note :** `_verifyAlertAtRandom()` conservée inactive — détection probabiliste avant 100%, à activer lors de l'équilibrage.
 
 **Feuille de route (détail dans GDD section 11) :**
-- Court terme : **ciblage** terminé ✅ — 3 effets de ciblage, ciblage auto, validation UI. **Données par ennemi** ✅ — `data` déplacé de Player vers Enemy, ScanBasique ciblé. **Exhaust** ✅ — cartes à usage unique (`VirementAnonyme`)
-- Moyen terme : nouveaux ennemis, nouvelles actions, nouvelles cartes, animations par carte
+- Court terme : **ciblage** ✅, **données par ennemi** ✅, **exhaust** ✅, **défausse partielle** ✅. Reste : limite de défausse, limite de cartes en main
+- Moyen terme : nouveaux ennemis (Drone, Firewall Corp, Vigile Corrompu), nouvelles actions, nouvelles cartes (Exploit Zero-Day, Malware Ciblé), animations par carte
 - Long terme : carte BSP, récompenses, nœuds, méta-progression
 - Transversal : équilibrage jauge, dégâts, Status

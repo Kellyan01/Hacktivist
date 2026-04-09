@@ -4,6 +4,16 @@
 @combatEngine : CombatEngine
 @player : Player
 @enemies : Enemy[]
+@gameEl = NodeElement
+@enemyZoneEl = NodeElement
+@playerStatsEl : NodeElement
+@playerStatusEl = NodeElement
+@handZoneEl : NodeElement
+@btnEndTurn : NodeElement
+@btnPlay : NodeElement
+@selectedCard : AbstractCard | null
+@combatResultEl : NodeElement
+@selectedToDiscard : Array[AbstractCard]
 */
 export class CombatUI{
     constructor(combatEngine, player, enemies){
@@ -19,6 +29,8 @@ export class CombatUI{
         this.btnPlay = document.querySelector("#btn-play");
         this.selectedCard = null;
         this.combatResultEl = document.querySelector("#combat-result");
+        this.btnDiscard = document.querySelector("#btn-discard");
+        this.selectedToDiscard = [];
     }
 
     //PRIVATE METHODS
@@ -28,6 +40,7 @@ export class CombatUI{
         if(result){
             this.btnEndTurn.style.display = "none";
             this.btnPlay.style.display = "none";
+            this.btnDiscard.style.display = "none";
             if(result === this.player){
                 this.combatResultEl.textContent = "Victoire !";
             }else{
@@ -127,6 +140,14 @@ export class CombatUI{
                 handCard.classList.add("selected");
             }
 
+            //Verify if it's Discard Phase
+            if(this.combatEngine.phase === "discardPhase"){
+                //Add class .selected to .card if card is in selectedToDiscard
+                if(this.selectedToDiscard.includes(card)){
+                    handCard.classList.add("selected");
+                }
+            }
+
             //Add Stat to Hand Card Article
             handCard.append(name, type, cost, description);
             handCard.dataset.index = this.player.hand.indexOf(card);
@@ -167,6 +188,23 @@ export class CombatUI{
                 this.playerStatusEl.append(statusEl);
             }
         }
+
+        //Display or Hidde Discard Button and End Turn Button
+        if(this.combatEngine.isOver){
+            this.btnDiscard.style.display = "none";
+            this.btnEndTurn.style.display = "none";
+        }else{
+            if(this.combatEngine.phase === "discardPhase"){
+                this.btnDiscard.style.display = "inline";
+                this.btnEndTurn.style.display = "none";
+            }else if(this.combatEngine.phase === "playerTurn"){
+                this.btnDiscard.style.display = "none";
+                this.btnEndTurn.style.display = "inline";
+            }else{
+                this.btnDiscard.style.display = "none";
+                this.btnEndTurn.style.display = "none";
+            }
+        }
     }
 
     //Method to select a card
@@ -179,6 +217,22 @@ export class CombatUI{
         }else{
             this.selectedCard = card;
             card.targeted ? this.btnPlay.style.display = "none" : this.btnPlay.style.display = "block";
+        }
+        this.render();
+    }
+
+    //Method to select cards during Discard Phase
+    //@cards : Array[AbstractCard]
+    _selectCardToDiscard(card){
+        //Verify if combat is over -> return
+        if (this.combatEngine.isOver) return;
+        //Take index of selected card
+        const index = this.selectedToDiscard.indexOf(card)
+        //Verify if card is in this.selectedToDiscard
+        if(this.selectedToDiscard.includes(card)){
+            this.selectedToDiscard.splice(index,1);
+        }else{
+            this.selectedToDiscard.push(card);
         }
         this.render();
     }
@@ -216,7 +270,12 @@ export class CombatUI{
             if (!cardEl) return;
             const index = cardEl.dataset.index;
             const card = this.player.hand[index];
-            this._selectCard(card);
+            if(this.combatEngine.phase === "playerTurn"){
+                this._selectCard(card);
+            }
+            else if(this.combatEngine.phase === "discardPhase"){
+                this._selectCardToDiscard(card);
+            }
         })
 
         //Click on an Enemy
@@ -240,8 +299,26 @@ export class CombatUI{
 
         //Click on button to End Turn
         this.btnEndTurn.addEventListener("click", async event => {
+            //const result = await this.combatEngine.switchTurn();
+            //this._handleCombatResult(result)
+
+            //Enter in Discard Phase
+            this.combatEngine.discardPhase();
+            this.render();
+        })
+
+        //Click on button to Discard Cards during Discard Phase
+        this.btnDiscard.addEventListener("click", async event => {
+            //Discard cards in this.selecedToDiscard
+            //Discard each card
+            this.combatEngine.launchDiscard(this.selectedToDiscard);
+            //Empty this.selectedToDiscard
+            this.selectedToDiscard = [];
+            //Switch Turn
+            this.btnDiscard.style.display = "none";
+            this.render();
             const result = await this.combatEngine.switchTurn();
-            this._handleCombatResult(result)
+            this._handleCombatResult(result);
             this.render();
         })
     }

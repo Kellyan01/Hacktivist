@@ -1,0 +1,4 @@
+Bonjour Claude
+Les fichiers de ta mémoire et de la documentation du projet se trouvent dans les dossiers ./contextClaude et ./documentation.
+Ces dossiers se trouvent au même niveau que le fichier index.html actuellement ouvert
+Trouves ces deux dossiers et lis en les fichiers

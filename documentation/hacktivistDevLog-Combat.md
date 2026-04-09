@@ -198,7 +198,74 @@ Script de test fonctionnel dans `src/script/script.js`.
 
 ---
 
+## Session 5 — 2026-04-09
+
+### Feature : défausse partielle en fin de tour
+
+Le joueur peut choisir quelles cartes défausser de sa main avant de passer au tour ennemi. Les cartes non défaussées restent en main pour le tour suivant.
+
+**Nouveau flux de tour :**
+1. Tour joueur — jouer des cartes
+2. Clic "Fin de Tour" → entre en phase de défausse
+3. Phase de défausse — sélection multi-cartes (toggle)
+4. Clic "Défausser les Cartes" → défausse les cartes sélectionnées, lance le tour ennemi
+
+**Pas de limite de défausse pour l'instant** — à activer lors de l'équilibrage (`discardLimit`). Pas de défausse totale forcée.
+
+---
+
+### Gestion de phase dans CombatEngine
+
+Ajout de la propriété `this.phase` — trois états possibles :
+
+| Phase | Description |
+|---|---|
+| `"playerTurn"` | Tour du joueur — peut jouer des cartes |
+| `"discardPhase"` | Phase de défausse — sélection des cartes à défausser |
+| `"enemyTurn"` | Tour des ennemis |
+
+**Mise à jour de `this.phase`** dans : `_playerTurn()`, `_enemyTurn()`, `launchFight()` (cas initiative ennemie), `discardPhase()`.
+
+**Nouvelles méthodes publiques :**
+
+| Méthode | Description |
+|---|---|
+| `discardPhase()` | Passe `this.phase` à `"discardPhase"` |
+| `launchDiscard(cards)` | Défausse un tableau de cartes via `_discardCard()` |
+
+---
+
+### Modifications CombatUI
+
+**Nouvelles propriétés :**
+- `selectedToDiscard = []` — tableau de cartes sélectionnées pour la défausse
+- `btnDiscard` — référence DOM vers `#btn-discard`
+
+**Nouvelle méthode :**
+- `_selectCardToDiscard(card)` — toggle une carte dans `selectedToDiscard` (ajout/retrait avec `splice`)
+
+**Modifications existantes :**
+- `bindEvents()` — listener `#hand-zone` dispatch selon la phase (`_selectCard` en playerTurn, `_selectCardToDiscard` en discardPhase). Bouton "Fin de Tour" appelle `discardPhase()` au lieu de `switchTurn()`. Nouveau listener `#btn-discard` : défausse + `switchTurn()` + `render()`
+- `_renderHand()` — surligne les cartes dans `selectedToDiscard` en phase de défausse
+- `_renderPlayer()` — gestion de la visibilité des boutons selon 4 cas : `isOver` (tout cacher), `discardPhase` (btnDiscard visible), `playerTurn` (btnEndTurn visible), `enemyTurn` (tout cacher)
+
+**Fichiers HTML/CSS :**
+- `index.html` — bouton `#btn-discard` ajouté dans `#controls-zone`
+- `main.css` — `#btn-discard` caché par défaut (`#btn-play, #btn-discard { display: none; }`)
+
+**script.js :**
+- `let ui` déclaré avant CombatEngine pour référence dans le callback `onAction`
+- `ui.render()` ajouté dans le callback `onAction` — masque les boutons pendant le tour ennemi
+
+---
+
 ## Prochaine étape
 
-Feature `combat` terminée. Voir `hacktivistDevLog-Interface.md` pour la suite.
+Feature `combat` — défausse partielle terminée.
+
+**Feuille de route (détail dans GDD section 11) :**
+- Court terme : limite de défausse (`discardLimit`), limite de cartes en main (style Magic)
+- Moyen terme : nouveaux ennemis, nouvelles actions, nouvelles cartes, animations par carte
+- Long terme : carte BSP, récompenses, nœuds, méta-progression
+- Transversal : équilibrage (jauge, dégâts, Status)
 
