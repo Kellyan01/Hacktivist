@@ -48,3 +48,14 @@ export const TYPE_STATUS = {
 export const TYPE_ACTION = {
     ATTACK : "Attack"
 }
+
+//Event List Constant
+export const EVENT_LIST = {
+    COMBAT_START : "combatStart",
+    CARD_PLAYED : "cardPlayed",
+    PHASE_CHANGED : "phaseChanged",
+    MODE_CHANGED : "modeChanged",
+    ENEMY_ACTION : "enemyAction",
+    EXPLOIT_GENERATED : 'exploitGenerated',
+    COMBAT_END : "combatEnd"
+}

@@ -1,4 +1,5 @@
-import {MODE, PHASE} from '../constants.js';
+import {MODE, PHASE, EVENT_LIST} from '../constants.js';
+import { sleep } from '../utils.js';
 //Class for Combat User Interface
 /*
 @combatEngine : CombatEngine
@@ -14,6 +15,7 @@ import {MODE, PHASE} from '../constants.js';
 @selectedCard : AbstractCard | null
 @combatResultEl : NodeElement
 @selectedToDiscard : Array[AbstractCard]
+@info = NodeElement
 */
 export class CombatUI{
     constructor(combatEngine, player, enemies){
@@ -31,6 +33,7 @@ export class CombatUI{
         this.combatResultEl = document.querySelector("#combat-result");
         this.btnDiscard = document.querySelector("#btn-discard");
         this.selectedToDiscard = [];
+        this.info = document.querySelector("#info");
     }
 
     //PRIVATE METHODS
@@ -246,21 +249,43 @@ export class CombatUI{
             if(this.selectedCard.targetValidation){
                 const validTargets = this.selectedCard.targetValidation.filter(this.selectedCard, [enemy]);
                 if(validTargets.length === 0) {
-                    const info = document.querySelector('#info');
-                    info.textContent = "Cible non valide";
+                    this.info.textContent = "Cible non valide";
                     return;
                 }
             }   
             //Play Card
-            const result = await this.combatEngine.playCard(this.selectedCard, [enemy]);
-            this._handleCombatResult(result)
+            await this.combatEngine.playCard(this.selectedCard, [enemy]);
             this.selectedCard = null;
-            this.render();
         }
     }
 
 
     //PUBLIC METHODS
+    //Method to subscribe to Combat Engine Event Emitter
+    bindEmitter(){
+        this.combatEngine.emitter.on(EVENT_LIST.CARD_PLAYED,()=>{
+            this.render();
+        });
+        this.combatEngine.emitter.on(EVENT_LIST.PHASE_CHANGED,()=>{
+            this.render();
+        });
+        this.combatEngine.emitter.on(EVENT_LIST.COMBAT_START,()=>{
+            this.render();
+        });
+        this.combatEngine.emitter.on(EVENT_LIST.MODE_CHANGED,()=>{
+            this.render();
+        });
+        this.combatEngine.emitter.on(EVENT_LIST.ENEMY_ACTION,async (enemy)=>{
+            this.render();
+            this.info.textContent = `${enemy.name} effectue : ${enemy.intention.name}`;
+            await sleep(1500);
+            this.info.textContent = "";
+        });
+        this.combatEngine.emitter.on(EVENT_LIST.COMBAT_END,(data)=>{
+            this._handleCombatResult(data);
+        });
+    }
+
     //Method to add EventListener
     bindEvents(){
         //Click on a Card
@@ -290,23 +315,18 @@ export class CombatUI{
 
         //Click on button Play Card
         this.btnPlay.addEventListener("click", async event => {
-            const result = await this.combatEngine.playCard(this.selectedCard);
-            this._handleCombatResult(result);
+            await this.combatEngine.playCard(this.selectedCard);
             this.selectedCard = null;
             this.btnPlay.style.display = "none";
-            this.render();
         })
 
         //Click on button to End Turn
         this.btnEndTurn.addEventListener("click", async event => {
             if(this.player.deck.hand.length === 0){
-                const result = await this.combatEngine.switchTurn();
-                this._handleCombatResult(result);
-                this.render();
+                await this.combatEngine.switchTurn();
             }else{
                 //Enter in Discard Phase
-                this.combatEngine.discardPhase();
-                this.render();
+                await this.combatEngine.discardPhase();
             }
         })
 
@@ -319,10 +339,7 @@ export class CombatUI{
             this.selectedToDiscard = [];
             //Switch Turn
             this.btnDiscard.style.display = "none";
-            this.render();
-            const result = await this.combatEngine.switchTurn();
-            this._handleCombatResult(result);
-            this.render();
+            await this.combatEngine.switchTurn();
         })
     }
 

@@ -1,7 +1,8 @@
 import {Player} from "../entities/characterEntities/Player.js";
 import {Enemy} from "../entities/characterEntities/Enemy.js";
 import { VirementAnonyme } from "../entities/cardEntities/VirementAnonyme.js";
-import {MODE, PHASE, STATUS, TYPE_CARD, TYPE_VULNERABILITY} from "../constants.js";
+import {MODE, PHASE, STATUS, TYPE_CARD, TYPE_VULNERABILITY, EVENT_LIST} from "../constants.js";
+import { EventEmitter } from "../EventEmitter.js";
 
 
 //Class that handles combat between the player and the enemy
@@ -14,11 +15,11 @@ import {MODE, PHASE, STATUS, TYPE_CARD, TYPE_VULNERABILITY} from "../constants.j
 @turnCount : int
 @mode : string "Ghost" | "RedAlert"
 @isOver : boolean
-@onAction
 @phase : string "playerTurn" | "discardPhase" | "enemyTurn"
+@emitter : EventEmitter
 */
 export class CombatEngine {
-    constructor(player, enemies, initPlayer, energyPerTurn, handSize, onAction = null) {
+    constructor(player, enemies, initPlayer, energyPerTurn, handSize) {
         this.player = player;
         this.enemies = enemies;
         this.initPlayer = initPlayer;
@@ -27,8 +28,8 @@ export class CombatEngine {
         this.turnCount = 0;
         this.mode = MODE.GHOST;
         this.isOver = false;
-        this.onAction = onAction;
         this.phase = PHASE.PLAYER_TURN;
+        this.emitter = new EventEmitter();
     }
 
     //PRIVATE METHODS
@@ -42,7 +43,7 @@ export class CombatEngine {
     //@enemy : Enemy
     async _enemyAction(enemy){
         enemy.act(this.player, this.enemies);
-        await this.onAction?.(enemy);
+        await this.emitter.emit(EVENT_LIST.ENEMY_ACTION,enemy);
         this._changeIntention(enemy);
     }   
 
@@ -50,12 +51,13 @@ export class CombatEngine {
     async _enemyTurn(){
         //change combat phase for enemyTurn
         this.phase = PHASE.ENEMY_TURN;
+        await this.emitter.emit(EVENT_LIST.PHASE_CHANGED, PHASE.ENEMY_TURN);
         //if ghost mode, verify alert
         if(this.mode === MODE.GHOST){
             //a update alert
             this._updateAlert();
             //b. verify alert
-            this._verifyAlert() ? this.mode = MODE.RED_ALERT : null;
+            this._verifyAlert();
         }
 
         //if RedAlert mode -> enemy actions
@@ -74,6 +76,7 @@ export class CombatEngine {
                     const winner = this.verifyVictory();
                     if(winner){
                         this.endFight();
+                        await this.emitter.emit(EVENT_LIST.COMBAT_END,winner);
                         return winner;
                     }
                 }
@@ -83,10 +86,12 @@ export class CombatEngine {
 
     //Method to generate an exploit card
     //@enemy : Enemy
-    _generateExploitCard(enemy){
+    async _generateExploitCard(enemy){
         switch(enemy.vulnerability){
             case TYPE_VULNERABILITY.FINANCIAL:
-                return new VirementAnonyme();
+                const card = new VirementAnonyme();
+                await this.emitter.emit(EVENT_LIST.EXPLOIT_GENERATED, card);
+                return card;
             default:
                 return null;
         }
@@ -98,7 +103,7 @@ export class CombatEngine {
     }
 
     //Method to handle player turn
-    _playerTurn(){
+    async _playerTurn(){
         ////Change combat phase for playerTurn
         this.phase = PHASE.PLAYER_TURN;
         //Enemy datas
@@ -111,6 +116,7 @@ export class CombatEngine {
         this._initializeEnergy();
         //c. draw cards
         this.player.deck.draw(this.handSize);
+        await this.emitter.emit(EVENT_LIST.PHASE_CHANGED, PHASE.PLAYER_TURN);
     }
 
     //Method to show Enemy Intentions
@@ -175,10 +181,10 @@ export class CombatEngine {
 
     //Method to verify Data Threshold
     //@enemy : Enemy
-    _verifyData(enemy){
+    async _verifyData(enemy){
         if(enemy.dataThreshold !== undefined && enemy.data >= enemy.dataThreshold){
             //Add exploit card to player deck
-            const exploitCard = this._generateExploitCard(enemy);
+            const exploitCard = await this._generateExploitCard(enemy);
             if(exploitCard !== null){
                 this.player.deck.cards.push(exploitCard);
                 console.log(`Data threshold reached for ${enemy.name}. ${exploitCard.name} added to deck.`);
@@ -194,9 +200,10 @@ export class CombatEngine {
 
     //PRUBLIC METHODS
     //Method to Handle Discard Phase
-    discardPhase(){
+    async discardPhase(){
         //change combat phase for discardPhase
         this.phase = PHASE.DISCARD;
+        await this.emitter.emit(EVENT_LIST.PHASE_CHANGED, PHASE.DISCARD);
 
     }
 
@@ -217,10 +224,12 @@ export class CombatEngine {
     async launchFight(){
         //initialize combat phase for playerTurn
         this.phase = PHASE.PLAYER_TURN; 
+        await this.emitter.emit(EVENT_LIST.PHASE_CHANGED, PHASE.PLAYER_TURN);
         //1. shuffle the player deck
         this.player.deck.shuffle();
         //2. Ghost Mode
         this.mode = MODE.GHOST;
+        await this.emitter.emit(EVENT_LIST.MODE_CHANGED, MODE.GHOST);
         //3. Initialize enemy Inentions
         for(const enemy of this.enemies){
             this._changeIntention(enemy);
@@ -235,6 +244,7 @@ export class CombatEngine {
         if(!this.initPlayer){
             //Change combat phase for enemyTurn
             this.phase = PHASE.ENEMY_TURN;
+            await this.emitter.emit(EVENT_LIST.PHASE_CHANGED,PHASE.ENEMY_TURN);
             //Enemy turn
             //a. Enemy Act
             for(const enemy of this.enemies){
@@ -243,12 +253,14 @@ export class CombatEngine {
                 const winner = this.verifyVictory();
                 if(winner){
                     this.endFight();
+                    await this.emitter.emit(EVENT_LIST.COMBAT_END,winner);
                     return winner;
                 }
             }
             //b. then change turn
             this.switchTurn();
         }
+        await this.emitter.emit(EVENT_LIST.COMBAT_START,null)
     }
 
     //Method to play card
@@ -256,7 +268,7 @@ export class CombatEngine {
     @card : AbstractCard
     @targets : AbstractCharacter[]
     */
-    playCard(card, targets = []){
+    async playCard(card, targets = []){
         //1. Verify that player has enough energy to play the card
         if(this.player.energy < card.cost){
             throw new Error("Not enough energy to play this card.");
@@ -271,21 +283,24 @@ export class CombatEngine {
         const winner = this.verifyVictory();
         if(winner){
             this.endFight();
+            await this.emitter.emit(EVENT_LIST.COMBAT_END, winner);
             return winner;
         }
         //7. Verif Data
         for(const enemy of this.enemies){
-            this._verifyData(enemy);
+            await this._verifyData(enemy);
         }
         //6. Verify Ghost Mode
         if(this.mode === MODE.GHOST && card.type !== TYPE_CARD.MATRIX && card.type !==TYPE_CARD.GROUND){
             this.switchGhostToRedAlert();
         }
+        await this.emitter.emit(EVENT_LIST.CARD_PLAYED, card);
     }
 
     //Method to switch from Ghost to Red Alert mode
-    switchGhostToRedAlert(){
+    async switchGhostToRedAlert(){
         this.mode = MODE.RED_ALERT;
+        await this.emitter.emit(EVENT_LIST.MODE_CHANGED,MODE.RED_ALERT);
         console.log("You have been detected! Switching to Red Alert mode.");
     }
 
@@ -303,7 +318,7 @@ export class CombatEngine {
         //2. Verify initPlayer and Modulo 2
         //player turn
         if((this.initPlayer && this.turnCount % 2 === 0) || (!this.initPlayer && this.turnCount % 2!== 0) ){
-            this._playerTurn();
+            await this._playerTurn();
         }
         //enemy turn
         else{

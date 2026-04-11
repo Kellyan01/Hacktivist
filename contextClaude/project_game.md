@@ -137,11 +137,17 @@ Analyse structurelle réalisée. 8 points faibles identifiés, 8 recommandations
 - `AbstractPlayable.js` — parent commun `AbstractCard` / `AbstractAction`
 - `Deck.js` — `Player` possède un `Deck` au lieu de 3 tableaux
 - `TargetFilterInterface.js` — interface dédiée, méthode `filter()` distincte de `effect()`
+- `EventEmitter.js` — pattern Observer, composition dans CombatEngine
+- `utils.js` — utilitaire `sleep`
+- `constants.js` — `EVENT_LIST` ajouté (9 objets au total)
+- `CombatUI.bindEmitter()` — s'abonne aux événements au lieu d'appeler `render()` manuellement
 
 7. R7 — Constantes (`constants.js`, 8 objets) ✅
 
-**Prioritaire (prochaine session) :**
-8. R8 — Système d'événements (EventEmitter) — à faire avant tout ajout de contenu
+7. R7 — Constantes (`constants.js`, 9 objets dont `EVENT_LIST`) ✅
+8. R8 — Système d'événements (EventEmitter, pattern Observer, composition) ✅
+
+**Toutes les recommandations architecturales sont terminées.**
 
 ---
 

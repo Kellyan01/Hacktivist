@@ -162,7 +162,7 @@ Mettre à jour toutes les instanciations dans les cartes et actions.
 
 ---
 
-#### R8. Système d'événements
+#### R8. Système d'événements ✅ 2026-04-11
 
 **Problème :** PF6
 **Priorité :** PRIORITAIRE — à implémenter avant l'ajout de contenu (nouveaux ennemis, cartes, animations).
@@ -180,6 +180,8 @@ Mettre à jour toutes les instanciations dans les cartes et actions.
 | 4 | R6 — Parent commun Card/Action | Clarifie la hiérarchie avant de toucher aux mutations | ✅ 2026-04-09 |
 | 5 | R2 — Encapsuler les mutations | Dépend de la hiérarchie clarifiée | ✅ 2026-04-09 |
 | 6 | R3 — Extraire Deck | La plus grosse refacto, à faire en dernier pour limiter les conflits | ✅ 2026-04-09 |
+| 7 | R7 — Constantes | Protège contre les typos sur les strings | ✅ 2026-04-09 |
+| 8 | R8 — Système d'événements | Découple Engine/UI, prépare Signaux Godot | ✅ 2026-04-11 |
 
 ---
 
@@ -274,13 +276,79 @@ Instanciations mises à jour dans : `ScanBasique`, `Brouilleur`, `FirewallPerson
 
 ---
 
+## Session 2 — 2026-04-11
+
+### R8 — Système d'événements (EventEmitter)
+
+**Pattern :** Observer — CombatEngine émet, CombatUI s'abonne.
+
+**Nouveaux fichiers :**
+- `src/script/EventEmitter.js` — classe EventEmitter (composition, pas héritage)
+- `src/script/utils.js` — utilitaire `sleep` extrait de `script.js`
+
+**EventEmitter — structure :**
+
+| Propriété | Description |
+|---|---|
+| `events` | `Map` — clé = nom d'événement, valeur = tableau de callbacks |
+
+| Méthode | Description |
+|---|---|
+| `on(eventName, callback)` | S'abonner — crée le tableau si l'événement n'existe pas encore |
+| `off(eventName, callback)` | Se désabonner — vérifie l'existence avant splice |
+| `async emit(eventName, data)` | Déclencher — exécute tous les callbacks avec `await`, retourne silencieusement si aucun abonné |
+
+**Intégration dans CombatEngine :**
+- Composition : `this.emitter = new EventEmitter()` dans le constructeur
+- Paramètre `onAction` supprimé du constructeur — remplacé par l'événement `ENEMY_ACTION`
+- 7 événements émis aux moments clés (constantes dans `EVENT_LIST`)
+
+**Événements :**
+
+| Événement | Émis dans | Data |
+|---|---|---|
+| `combatStart` | `launchFight()` | `null` |
+| `cardPlayed` | `playCard()` | la carte |
+| `phaseChanged` | `_playerTurn()`, `_enemyTurn()`, `discardPhase()`, `launchFight()` | la phase |
+| `modeChanged` | `switchGhostToRedAlert()`, `launchFight()` | le mode |
+| `enemyAction` | `_enemyAction()` | l'ennemi |
+| `exploitGenerated` | `_generateExploitCard()` | la carte exploit |
+| `combatEnd` | `playCard()`, `_enemyTurn()`, `launchFight()` | le vainqueur |
+
+**Intégration dans CombatUI :**
+- `bindEmitter()` — nouvelle méthode publique, abonne l'UI aux événements
+- `render()` déclenché par les événements au lieu d'appels manuels
+- `_handleCombatResult()` déclenché par `COMBAT_END`
+- Animation tour ennemi (message + `sleep(1500)`) déclenchée par `ENEMY_ACTION`
+- `this.info` ajouté au constructeur (référence DOM `#info`)
+- Appels manuels de `render()` et `_handleCombatResult()` retirés de `bindEvents()`
+- `_selectCard()` et `_selectCardToDiscard()` conservent leur `render()` — interactions UI pures
+
+**Chaîne async :**
+- `emit()` est `async` avec `await callback(data)` pour supporter les callbacks async (ex: `sleep`)
+- Méthodes rendues `async` : `_playerTurn`, `_generateExploitCard`, `_verifyData`, `playCard`, `discardPhase`, `switchGhostToRedAlert`
+- Tous les `emit()` sont `await`és dans CombatEngine
+
+**script.js simplifié :**
+- Callback `onAction` supprimé
+- `let ui` → `const ui`
+- Ajout `ui.bindEmitter()` avant `ui.bindEvents()`
+
+**Bug corrigé pendant la session :**
+- `PHASE_CHANGED` émis **avant** la pioche dans `_playerTurn()` → déplacé en fin de méthode pour que le render voie l'état complet du tour
+
+---
+
 ## Structure du projet après refactorisation
 
 ```
 src/script/
+├── constants.js                     ← EVENT_LIST ajouté (9 objets au total)
+├── EventEmitter.js                  ← NOUVEAU — pattern Observer (Map, on/off/emit async)
+├── utils.js                         ← NOUVEAU — utilitaire sleep
 ├── entities/
-│   ├── AbstractPlayable.js          ← NOUVEAU — parent commun cartes/actions
-│   ├── Deck.js                      ← NOUVEAU — gestion pioche/main/défausse
+│   ├── AbstractPlayable.js          ← parent commun cartes/actions
+│   ├── Deck.js                      ← gestion pioche/main/défausse
 │   ├── Status.js
 │   ├── actionEntities/
 │   │   ├── AbstractAction.js        ← extends AbstractPlayable
@@ -303,16 +371,16 @@ src/script/
 │   │   ├── GainData.js
 │   │   ├── IncreaseAlert.js
 │   │   └── ReduceAlert.js
-│   └── targetEntities/              ← DÉPLACÉ depuis effectEntities/targetEffect/
+│   └── targetEntities/
 │       ├── TargetByHealth.js        ← extends TargetFilterInterface
 │       ├── TargetByStatus.js
 │       └── TargetByType.js
 ├── game/
-│   ├── CombatEngine.js              ← allégé, délègue au Deck
-│   └── CombatUI.js
+│   ├── CombatEngine.js              ← composition EventEmitter, émet 7 événements
+│   └── CombatUI.js                  ← bindEmitter(), s'abonne aux événements
 ├── interfaces/
 │   ├── EffectInterface.js           ← effets applicatifs (void)
-│   └── TargetFilterInterface.js     ← NOUVEAU — filtres de ciblage (AbstractCharacter[])
+│   └── TargetFilterInterface.js     ← filtres de ciblage (AbstractCharacter[])
 └── script.js
 ```
 
