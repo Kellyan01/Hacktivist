@@ -280,13 +280,52 @@ Ajout de la propriété `this.phase` — trois états possibles :
 
 ---
 
+## Session 6 — 2026-04-11
+
+### Feature : IA ennemie — comportements d'intention (pattern Strategy)
+
+Les ennemis choisissent désormais leur intention via un objet **behavior** injecté par composition, au lieu d'un aléatoire codé en dur dans `CombatEngine`.
+
+**Pattern :** Strategy — une interface `BehaviorInterface` + 4 classes concrètes. Le comportement est injecté dans `Enemy` via le constructeur.
+
+**Nouveaux fichiers :**
+
+| Fichier | Dossier | Description |
+|---|---|---|
+| `BehaviorInterface.js` | `interfaces/` | Interface abstraite — méthode `chooseAction(enemy, player, enemies)` |
+| `ChaoticBehavior.js` | `entities/behaviorEntities/` | Aléatoire pur (ancien `_changeIntention`) |
+| `ProceduralBehavior.js` | `entities/behaviorEntities/` | Cycle fixe — index + modulo |
+| `SemiRandomBehavior.js` | `entities/behaviorEntities/` | Aléatoire sans répétition consécutive (`lastAction`) |
+| `ConditionalBehavior.js` | `entities/behaviorEntities/` | Règles prioritaires `{condition, action}` + fallback (`defaultAction`) |
+| `ConditionFactory.js` | `entities/behaviorEntities/` | Méthode statique `buildCondition(conditionName)` — retourne une fonction booléenne |
+
+**Modifications existantes :**
+
+| Fichier | Modification |
+|---|---|
+| `Enemy.js` | Nouvelle propriété `behavior` (BehaviorInterface), ajoutée au constructeur |
+| `CombatEngine._changeIntention()` | Délègue à `enemy.behavior.chooseAction(enemy, player, enemies)` |
+| `GardeDeNuit.js` | Reçoit un behavior au constructeur (testé avec `ChaoticBehavior` et `ConditionalBehavior`) |
+| `constants.js` | Ajout de `CONDITION_LIST` (`SELF_NO_SHIELD`, `HALF_HP`) |
+
+**ConditionFactory — conditions disponibles :**
+
+| Constante | Condition |
+|---|---|
+| `CONDITION_LIST.HALF_HP` | `enemies.some(e => e.health < e.maxHealth * 0.5)` |
+| `CONDITION_LIST.SELF_NO_SHIELD` | `!enemy.status.some(s => s.name === STATUS.SHIELD)` |
+
+**Principe :** la factory ne retourne que la fonction condition. L'association condition + action se fait dans la configuration de chaque ennemi, pour garder la souplesse (même condition, actions différentes selon l'ennemi).
+
+---
+
 ## Prochaine étape
 
-Feature `combat` — défausse partielle terminée.
+Feature `combat` — IA ennemie terminée.
 
 **Feuille de route (détail dans GDD section 11) :**
-- Court terme : limite de défausse (`discardLimit`), limite de cartes en main (style Magic), **IA ennemie (comportements d'intention)**
-- Moyen terme : nouveaux ennemis, nouvelles actions, nouvelles cartes, animations par carte
+- Court terme : limite de défausse (`discardLimit`), limite de cartes en main (style Magic), nouveaux ennemis avec behaviors variés
+- Moyen terme : nouveaux ennemis (Drone, Firewall Corp, Vigile Corrompu), nouvelles actions, nouvelles cartes, animations par carte
 - Long terme : carte BSP, récompenses, nœuds, méta-progression
 - Transversal : équilibrage (jauge, dégâts, Status)
 

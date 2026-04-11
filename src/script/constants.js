@@ -61,3 +61,16 @@ export const EVENT_LIST = {
     EXPLOIT_GENERATED : 'exploitGenerated',
     COMBAT_END : "combatEnd"
 }
+
+//Action List Constant
+export const ACTION_LIST = {
+    ATTAQUE_BASIQUE : "attaqueBasique",
+    BOUCLIER : "bouclier",
+    SOIN : "soin"
+}
+
+//Condition List Constant
+export const CONDITION_LIST = {
+    SELF_NO_SHIELD : "noShield",
+    HALF_HP : "halfHP"
+}

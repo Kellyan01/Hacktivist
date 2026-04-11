@@ -36,7 +36,7 @@ export class CombatEngine {
     //Method to change Enemy Intention
     //@enemy : Enemy
     _changeIntention(enemy){
-        enemy.intention = enemy.actionsList[Math.floor(Math.random()*enemy.actionsList.length)];
+        enemy.intention = enemy.behavior.chooseAction(enemy,this.player, this.enemies);
     }
 
     //Method to make the enemy act then change intention
