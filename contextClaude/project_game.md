@@ -151,8 +151,20 @@ Analyse structurelle réalisée. 8 points faibles identifiés, 8 recommandations
 
 ---
 
+**Prochaine session — IA ennemie (comportements d'intention) :**
+
+Pattern Strategy appliqué au choix d'intention des ennemis. Une interface comportementale + classes concrètes injectées dans `Enemy` via composition.
+
+4 comportements identifiés :
+1. **Chaotique** — aléatoire pur (actuel `_changeIntention`) → déjà fait
+2. **Procédural** — liste ordonnée, index qui avance (cycle fixe)
+3. **Semi-aléatoire** — aléatoire sans répétition consécutive
+4. **Conditionnel** — une seule classe avec liste de règles `{condition, action}` ordonnées par priorité. L'algorithme prend la première règle dont la condition est vraie. Même classe pour tous les ennemis, c'est la configuration qui change (ex: Medic soigne si allié < 50% PV, Soldat stun puis attaque). Les conditions pourraient réutiliser le pattern de filtrage existant (TargetByHealth, TargetByStatus...).
+
+---
+
 **Feuille de route (détail dans GDD section 11) :**
-- Court terme : **ciblage** ✅, **données par ennemi** ✅, **exhaust** ✅, **défausse partielle** ✅. Reste : limite de défausse, limite de cartes en main
+- Court terme : **ciblage** ✅, **données par ennemi** ✅, **exhaust** ✅, **défausse partielle** ✅. Reste : limite de défausse, limite de cartes en main, **IA ennemie (comportements)**
 - Moyen terme : nouveaux ennemis (Drone, Firewall Corp, Vigile Corrompu), nouvelles actions, nouvelles cartes (Exploit Zero-Day, Malware Ciblé), animations par carte
 - Long terme : carte BSP, récompenses, nœuds, méta-progression
 - Transversal : équilibrage jauge, dégâts, Status
