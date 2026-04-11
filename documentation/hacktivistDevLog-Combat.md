@@ -259,12 +259,33 @@ Ajout de la propriété `this.phase` — trois états possibles :
 
 ---
 
+## Ajouts — 2026-04-11
+
+### Nouvelles actions ennemies
+
+| Fichier | Type | Effet |
+|---|---|---|
+| `Bouclier.js` | `TYPE_ACTION.BUFF` | Applique un Shield (intensity 3, duration 3) sur l'ennemi lui-même via `ApplyStatus` |
+| `Soin.js` | `TYPE_ACTION.HEAL` | Restaure 3 PV sur l'ennemi lui-même via `Heal` |
+
+### Nouvel effet
+
+| Fichier | Description |
+|---|---|
+| `Heal.js` | Effet de soin — `modifyHealth(this.heal)`. Paramètres : `heal` (int), `typeNotAffected` (string). Même structure que `Damage.js`. |
+
+### Nouvelles constantes
+
+`TYPE_ACTION` — ajout de `HEAL` et `BUFF`.
+
+---
+
 ## Prochaine étape
 
 Feature `combat` — défausse partielle terminée.
 
 **Feuille de route (détail dans GDD section 11) :**
-- Court terme : limite de défausse (`discardLimit`), limite de cartes en main (style Magic)
+- Court terme : limite de défausse (`discardLimit`), limite de cartes en main (style Magic), **IA ennemie (comportements d'intention)**
 - Moyen terme : nouveaux ennemis, nouvelles actions, nouvelles cartes, animations par carte
 - Long terme : carte BSP, récompenses, nœuds, méta-progression
 - Transversal : équilibrage (jauge, dégâts, Status)

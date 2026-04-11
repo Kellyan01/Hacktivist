@@ -46,7 +46,9 @@ export const TYPE_STATUS = {
 
 //Action Type Constant
 export const TYPE_ACTION = {
-    ATTACK : "Attack"
+    ATTACK : "Attack",
+    HEAL : "Heal",
+    BUFF :"Buff"
 }
 
 //Event List Constant
