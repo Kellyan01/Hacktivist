@@ -44,6 +44,8 @@ Hacktiviste/
     │   │   ├── BehaviorInterface.js    ← stratégies d'intention (Action)
     │   │   ├── EffectInterface.js      ← effets applicatifs (void)
     │   │   └── TargetFilterInterface.js ← filtres de ciblage (AbstractCharacter[])
+    │   ├── map/                         ← génération procédurale BSP (en cours)
+    │   │   └── BSPNode.js               ← noeud de l'arbre BSP + méthode split() ✅
     │   ├── game/
     │   └── script.js
     └── style/
@@ -176,5 +178,28 @@ Changements structurels :
 **Feuille de route (détail dans GDD section 11) :**
 - Court terme : **ciblage** ✅, **données par ennemi** ✅, **exhaust** ✅, **défausse partielle** ✅, **IA ennemie** ✅. Reste : limite de défausse, limite de cartes en main
 - Moyen terme : nouveaux ennemis (Drone, Firewall Corp, Vigile Corrompu), nouvelles actions, nouvelles cartes (Exploit Zero-Day, Malware Ciblé), animations par carte
-- Long terme : carte BSP, récompenses, nœuds, méta-progression
+- Long terme : **carte BSP (en cours — rendu SVG fonctionnel)**, récompenses, nœuds, méta-progression
 - Transversal : équilibrage jauge, dégâts, Status
+
+---
+
+### Feature map — en cours 2026-04-12
+
+Génération procédurale de la carte d'acte via BSP. **Option B choisie** : BSP abstraite (points + connexions), pas de grille dessinée. Détail complet dans `documentation/hacktivistDevLog-Map.md`.
+
+**État :**
+- `BSPNode.js` — structure + méthode `split(minNodeSize)` ✅
+- `MapGenerator.js` — `generate()`, `_splitRecursive()`, `getLeaves()`, `placeRoom()`, `connectRooms()`, `_getFirstLeaf()` ✅
+- `MapNode.js` — `id`, `x`, `y` ✅
+- `Connection.js` — `from`, `to` ✅
+- `MapRenderer.js` — rendu SVG avec scale, cercles + lignes ✅
+- Testé et affiché dans le navigateur ✅
+
+**Décision 2026-04-12 — pivot vers génération par couches :**
+Le BSP seul ne produit pas de croisements ni de structure directionnelle. Nouvelle classe `LayeredMapGenerator` pour la carte d'acte style Slay the Spire. BSP conservé pour usage futur (donjons en grille).
+
+**Prochaines étapes (prioritaires) :**
+1. `LayeredMapGenerator.js` — génération par rangées (floors), nœuds par rangée, connexions vers rangée suivante
+2. Stratégie de connexion avec croisements géométriques
+3. Assignation des types de nœuds (`combat`, `merchant`, `rest`, `event`, `boss`)
+4. Rendu SVG adapté (nœuds alignés par rangée)
