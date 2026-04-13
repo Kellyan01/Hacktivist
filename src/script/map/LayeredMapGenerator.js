@@ -151,7 +151,7 @@ export class LayeredMapGenerator {
                 let copyMapNodes = [...mapNodes];
 
                 //random number of connection between 1 and 3
-                const n = Math.floor(Math.random()*3 + 1);
+                const n = Math.floor(Math.random()*1+1);
 
                 //max number of turn (n or mapNodes.length)
                 const max = Math.min(n, mapNodes.length);
@@ -216,7 +216,8 @@ export class LayeredMapGenerator {
                 let copyMapNodes = [...layer.nodesList];
 
                 //random number of connection between 1 and 3
-                const n = Math.floor(Math.random()*3 + 1);
+                const n = Math.floor(Math.random()*2 + 1);
+                //const n = 1;
 
                 //max number of turn (n or layer.nodesList.length)
                 const max = Math.min(n, layer.nodesList.length);

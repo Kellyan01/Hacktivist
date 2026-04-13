@@ -38,13 +38,13 @@ export class MapLayer{
         for(let i = number; i > 0; i--){
             //RANDOMISE X POSTION
             // % of dist
-            let deviationX = Math.random()*0.3*dist;
+            let deviationX = Math.random()*0.25*dist;
             // increase or deacrease ?
             if(Math.random()<0.5) deviationX = -deviationX;
 
             //RANDOMISE Y POSTION
             // % of dist
-            let deviationY = Math.random()*0.35*this.height;
+            let deviationY = Math.random()*0.3*this.height;
             // increase or deacrease ?
             if(Math.random()<0.5) deviationY = -deviationY;
             //Create the MapNode
