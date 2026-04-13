@@ -3,11 +3,13 @@
 @id : int
 @x : int
 @y : int
+@floor : int
 */
 export class MapNode{
-    constructor(id,x,y){
+    constructor(id,x,y,floor = 0){
         this.id = id;
         this.x = x;
         this.y = y;
+        this.floor = floor;
     }
 }
