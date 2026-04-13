@@ -150,7 +150,7 @@ export class LayeredMapGenerator {
                 //copy of mapNodes
                 let copyMapNodes = [...mapNodes];
 
-                //random number of connection between 1 and 3
+                //random number of connection between 1 and 2
                 const n = Math.floor(Math.random()*1+1);
 
                 //max number of turn (n or mapNodes.length)
@@ -277,8 +277,23 @@ export class LayeredMapGenerator {
     _generateLayer(){
         //Creation of the layer
         //layer height
-        const height = this.height / (this.nbrLayer + 1);
+        const height = this.height / (this.nbrLayer + 5);
         const layer = new MapLayer(this.width,height,this.floor,this.minNbrNode,this.maxNbrNode,this.lastId + 1);
+        //Generation of Layer's MapNodes
+        this.lastId = layer.generate();
+        //Save the last index in layer
+        layer.lastId = this.lastId;
+        //push the Layer in this.layers
+        this.layers.push(layer)
+    }
+
+    //Method to Generate a Layer with n Node
+    //@nbrNode : int -> number of Node
+    _generateNNodeLayer(nbrNode){
+        //Creation of the layer
+        //layer height
+        const height = this.height / (this.nbrLayer + 5);
+        const layer = new MapLayer(this.width,height,this.floor,nbrNode,nbrNode,this.lastId + 1);
         //Generation of Layer's MapNodes
         this.lastId = layer.generate();
         //Save the last index in layer
@@ -330,6 +345,18 @@ export class LayeredMapGenerator {
         this.firstId = 0;
         this.lastId = -1;
 
+        //Generate the Top Layer
+        //Increase the floor
+        this.floor += 1;
+        //Creation of the layer
+        this._generateNNodeLayer(1);
+
+        //Generate the Safe Place Layer before Boss
+        //Increase the floor
+        this.floor += 1;
+        //Creation of the layer
+        this._generateNNodeLayer(4);
+
         //Generate this.nbrLayer Layer
         for(let i = this.nbrLayer; i > 0; i--){
             //Increase the floor
@@ -337,6 +364,18 @@ export class LayeredMapGenerator {
             //Creation of the layer
             this._generateLayer();
         }
+
+        //Generate the First Combat Layer
+        //Increase the floor
+        this.floor += 1;
+        //Creation of the layer
+        this._generateNNodeLayer(3);
+
+        //Generate the End Layer
+        //Increase the floor
+        this.floor += 1;
+        //Creation of the layer
+        this._generateNNodeLayer(1);
 
         //Push node in this.nodes
         this._pushNodes();

@@ -32,7 +32,7 @@ function generateBSPMap(){
 
 function generateLayerMap(){
     //Generate Map
-    const map = new LayeredMapGenerator(20,40,2,6,10);
+    const map = new LayeredMapGenerator(20,80,2,6,11);
     //Generate the Layer
     map.generateMap();
 
