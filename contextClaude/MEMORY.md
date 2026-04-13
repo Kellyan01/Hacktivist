@@ -7,4 +7,4 @@
 - [Défausse partielle](../documentation/hacktivistDevLog-Combat.md) — session 5, 2026-04-09, phase de défausse en fin de tour
 - [Refacto architecture](../documentation/hacktivistDevLog-Refactoring-Architecture.md) — 8/8 recommandations terminées, EventEmitter (R8) ajouté le 2026-04-11
 - [IA ennemie](../documentation/hacktivistDevLog-Combat.md) — session 6, 2026-04-11, pattern Strategy (4 behaviors + ConditionFactory)
-- [Génération carte par couches](../documentation/hacktivistDevLog-Map.md) — pivot 2026-04-12 vers LayeredMapGenerator (style Slay the Spire), BSP conservé, prochaine étape : LayeredMapGenerator.js
+- [Génération carte par couches](../documentation/hacktivistDevLog-Map.md) — session 3 2026-04-13, LayeredMapGenerator + MapLayer ✅, anti-croisement ✅, prochaine étape : typage des nœuds

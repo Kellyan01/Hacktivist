@@ -307,11 +307,81 @@ src/script/map/
 
 ### Étapes d'implémentation
 
-1. `LayeredMapGenerator` — `constructor(width, height, floors, minNodes, maxNodes)`
-2. `generate()` — crée les nœuds par rangée, stocke dans `this.mapNodes` par floor
-3. Stratégie de connexion — connecter vers la rangée suivante avec règles de croisement
-4. Assignation des types (`combat`, `merchant`, `rest`, `event`, `boss`)
-5. Rendu SVG adapté (nœuds alignés par rangée, connexions diagonales)
+1. `LayeredMapGenerator` — `constructor(width, height, floors, minNodes, maxNodes)` ✅
+2. `MapLayer` — génération d'une couche avec déviation aléatoire X et Y ✅
+3. Stratégie de connexion `_connectLayer()` — N plus proches + gestion orphelins + anti-croisement ✅
+4. **Assignation des types** (`combat`, `merchant`, `rest`, `event`, `boss`) ← prochaine étape
+5. Rendu SVG enrichi (couleurs par type)
+
+---
+
+## Session 3 — 2026-04-13
+
+### LayeredMapGenerator.js + MapLayer.js
+
+**Fichiers :** `src/script/map/LayeredMapGenerator.js`, `src/script/map/MapLayer.js`
+
+#### MapLayer
+
+| Propriété | Type | Description |
+|---|---|---|
+| `width, height` | int | Dimensions de la couche |
+| `floor` | int | Numéro d'étage |
+| `minNbrNodes, maxNbrNodes` | int | Fourchette de nœuds par couche |
+| `firstId, lastId` | int | Plage d'ids des nœuds générés |
+| `nodesList` | MapNode[] | Nœuds de la couche |
+
+`generate()` — place M nœuds espacés uniformément sur X avec déviation aléatoire (±30% de l'espacement en X, ±35% de la hauteur en Y). Retourne `lastId` pour chaîner les ids avec la couche suivante.
+
+#### LayeredMapGenerator
+
+| Propriété | Type | Description |
+|---|---|---|
+| `width, height` | int | Dimensions de la carte |
+| `minNbrNode, maxNbrNode` | int | Fourchette de nœuds par couche |
+| `nbrLayer` | int | Nombre de couches |
+| `layers` | MapLayer[] | Couches générées |
+| `mapNodes` | MapNode[] | Liste plate de tous les nœuds |
+| `connections` | Connection[] | Connexions entre nœuds |
+| `floor` | int | Dernier étage (= nbrLayer après génération) |
+
+**Méthodes de connexion disponibles :**
+
+| Méthode | Description |
+|---|---|
+| `_connectAllNodes()` | Chaque nœud → tous les nœuds de la couche suivante |
+| `_connectNearNodes()` | Chaque nœud → le plus proche de la couche suivante |
+| `_connectNNearNodes()` | Chaque nœud → N plus proches (N aléatoire 1-3) |
+| `_connectLayer()` | **Méthode principale** — N plus proches + orphelins garantis + anti-croisement |
+
+**`_connectLayer()` — algorithme :**
+1. Pour chaque paire de couches (N, N+1)
+2. Étape 1 — pour chaque nœud de N : trouver les N plus proches sur N+1, vérifier anti-croisement, créer connexion, marquer dans `connectedIds`
+3. Étape 2 — pour chaque nœud de N+1 absent de `connectedIds` (orphelin) : connecter au plus proche sur N avec anti-croisement
+
+**Anti-croisement :** `_segmentsIntersect(a, b, c, d)` via `_orientation(p, q, r)` (produit vectoriel). Une connexion est rejetée si elle croise une connexion existante. Si aucun chemin sans croisement n'existe pour un orphelin, il reste non connecté (à améliorer).
+
+**Résultat visuel :** structure en chemins multiples, croisements visuels éliminés, feeling organique grâce aux déviations aléatoires. Quelques orphelins résiduels et un nœud hub à corriger ultérieurement.
+
+**Testé et fonctionnel dans le navigateur ✅**
+
+---
+
+## Prochaine étape — Typage des nœuds
+
+Ajouter une propriété `type` sur `MapNode` et une méthode `assignTypes()` dans `LayeredMapGenerator`.
+
+**Types prévus :**
+
+| Type | Description | Fréquence |
+|---|---|---|
+| `combat` | Rencontre ennemie standard | Majoritaire |
+| `merchant` | Achat de cartes / objets | Rare |
+| `rest` | Récupération de PV | Rare |
+| `event` | Événement aléatoire | Occasionnel |
+| `boss` | Boss de fin d'acte | 1 par acte (dernier étage) |
+
+**Règles à définir :** le nœud de départ (premier étage) et le boss (dernier étage) ont des types fixes. Les autres sont assignés aléatoirement selon des probabilités.
 
 ---
 
