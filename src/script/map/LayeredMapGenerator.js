@@ -132,6 +132,8 @@ export class LayeredMapGenerator {
 
     //Method to connect Nodes of a Layer with Nodes of Next Layer
     _connectLayer(){
+        // //final orphans
+        let copyOrphansList;
         //For each Layer
         //Limit case : If the Layer have last floor => return
         for(const layer of this.layers){
@@ -209,6 +211,9 @@ export class LayeredMapGenerator {
                 return !connectedIds.has(node.id);
             })
 
+            // //Copy orphanList
+            copyOrphansList = [...orphansList];
+
             //Find the nearest node on layer
             //For each orphan
             for(const orphan of orphansList){
@@ -262,10 +267,145 @@ export class LayeredMapGenerator {
                         //Add connected node id to Set
                         connectedIds.add(orphan.id);
                         connectedIds.add(nearNode.id);
+
+                        // //Delete orphan from copyOrphanList
+                        copyOrphansList = copyOrphansList.filter(node => node.id !== orphan.id);
+
                     }
 
                     //delete nearNode from copyMapNodes
                     copyMapNodes.splice(copyMapNodes.indexOf(nearNode),1);
+
+                    console.log("Orphans Origin :");
+                    console.log(orphansList);
+                    console.log("Orphans :");
+                    console.log(copyOrphansList);
+                }
+            }
+        }
+
+        // //It can have orphan yet
+        console.log("Final Orphans :")
+        console.log(copyOrphansList);
+
+        /* // 1. Verify node having zero on floor +1 or on floor -1 => compare this.mapNodes and this.connections
+           // 2. if zero connection on floor -1 (limit case : node on first layer / floor), create one connection with the first floor -1 node avoiding cross line
+           // 3. if zero connection on floor +1 (limit case : node on last layer / floor), create one connection with the first floor +1 node avoiding cross line
+        */
+
+        //Step 1
+        for(const node of this.mapNodes){
+            let nextFloor = false; //Floor +1 connected ?
+            let previousFloor = false; //Floor -1 connected
+            for(const connection of this.connections){
+                //verify connected node floor
+                if(node.id === connection.from){
+                    const connectedNode = this.mapNodes[connection.to];
+                    if(node.floor > connectedNode.floor){// connected to floor - 1
+                        previousFloor = true;
+                        //console.log("Node From "+node.id+" - Floor "+node.floor+" : connected with Floor-1 by "+connectedNode.floor);
+                    }
+                    if(node.floor < connectedNode.floor){// connected to floor +1
+                        nextFloor = true;
+                        //console.log("Node From "+node.id+" - Floor "+node.floor+" : connected with Floor+1 by "+connectedNode.floor);
+                    }
+                }
+                if(node.id === connection.to){
+                    const connectedNode = this.mapNodes[connection.from];
+                    if(node.floor > connectedNode.floor){// connected to floor - 1
+                        previousFloor = true;
+                        //console.log("Node To "+node.id+" - Floor "+node.floor+" : connected with Floor-1 by "+connectedNode.floor);
+                    }
+                    if(node.floor < connectedNode.floor){// connected to floor +1
+                        nextFloor = true;
+                        //console.log("Node To "+node.id+" - Floor "+node.floor+" : connected with Floor+1 by "+connectedNode.floor);
+                    }
+                }
+            }
+
+            //Step 2 : connected to first node of floor - 1 avoiding cross line
+            if(!previousFloor && node.floor !== 1){//Verify node isn't on first layer
+                console.log("Node "+node.id+" - Floor "+node.floor+" : not connected with Floor-1");
+
+                let isConnected = false;
+                for(const previousNode of this.layers[node.floor-2].nodesList){ // layer of floor - 1
+                    if(!isConnected){
+                        //Create New Connection between node and nearNode
+                        const connection = new Connection(node.id, previousNode.id);
+
+                        //Verify cross line with _segmentsIntersect()
+                        //Verify if their are connections
+                        if(this.connections.length >= 1){
+                            //For each connection verify the cross line
+                            let isCross = false;
+                            for(const existingConnection of this.connections){
+                                if(this._segmentsIntersect(node, previousNode, this.mapNodes[existingConnection.from], this.mapNodes[existingConnection.to])){
+                                    isCross = true;
+                                }
+                            }
+
+                            if(isCross){
+                                console.log("Node "+node.id+": Cross -> Connection Rejected")
+                            }else{
+                                console.log("Node "+node.id+": No Cross -> Accepted")
+                            }
+
+                            //if isCross is false => no cross line => push connection
+                            if(!isCross && !isConnected){
+                                //push connection in this.connections
+                                this.connections.push(connection);
+
+                                console.log("Node "+node.id+": Connection to floor -1")
+                                console.log("Connection is : "+connection.from+" to "+connection.to);
+                                console.log(connection);
+                                //stop the loop
+                                isConnected = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //Step 3 : connected to first node of floor + 1 avoiding cross line
+            if(!nextFloor && node.floor !== this.floor){//Verify node isn't on last layer
+                console.log("Node "+node.id+" - Floor "+node.floor+" : not connected with Floor+1");
+
+                let isConnected = false;
+                for(const nextNode of this.layers[node.floor].nodesList){ // layer of floor + 1
+                    if(!isConnected){
+                        //Create New Connection between node and nearNode
+                        const connection = new Connection(node.id, nextNode.id);
+
+                        //Verify cross line with _segmentsIntersect()
+                        //Verify if their are connections
+                        if(this.connections.length >= 1){
+                            //For each connection verify the cross line
+                            let isCross = false;
+                            for(const existingConnection of this.connections){
+                                if(this._segmentsIntersect(node, nextNode, this.mapNodes[existingConnection.from], this.mapNodes[existingConnection.to])){
+                                    isCross = true;
+                                }
+                            }
+
+                            if(isCross){
+                                console.log("Node "+node.id+": Cross -> Connection Rejected")
+                            }else{
+                                console.log("Node "+node.id+": No Cross -> Accepted")
+                            }
+
+                            //if isCross is false => no cross line => push connection
+                            if(!isCross && !isConnected){
+                                //push connection in this.connections
+                                this.connections.push(connection);
+
+                                console.log("Node "+node.id+": Connection to floor +1")
+                                console.log("Connection is : "+connection.from+" to "+connection.to);
+                                console.log(connection);
+                                //stop the loop
+                                isConnected = true;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -382,5 +522,6 @@ export class LayeredMapGenerator {
 
         //Connect Node
         this._connectLayer();
+        
     }
 }
