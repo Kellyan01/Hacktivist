@@ -74,3 +74,37 @@ export const CONDITION_LIST = {
     SELF_NO_SHIELD : "noShield",
     HALF_HP : "halfHP"
 }
+
+//Node Type List Constant
+export const NODE_TYPE_LIST = {
+    COMBAT : "combat",
+    EVENT : "event",
+    REST : "rest",
+    MERCHANT : "merchant",
+    BOSS : "boss",
+    START : "start",
+    END : "end",
+    MYSTERY : "mystery",
+    STORY : "story",
+    TREASURE : "treasure"
+}
+
+//Color Node List CONSTANT
+export const NODE_TYPE_CHANCE = {
+    "combat" :  45,
+    "event" : 20,
+    "rest" : 10,
+    "merchant" : 10,
+    "mystery" : 15
+}
+
+//Color Node List CONSTANT
+export const NODE_COLORS = {
+    "combat" :  "orange",
+    "event" : "purple",
+    "rest" : "green",
+    "merchant" : "yellow",
+    "boss" : "red",
+    "start" : "blue",
+    "mystery" : "gray"
+}

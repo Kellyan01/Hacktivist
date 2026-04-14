@@ -1,3 +1,5 @@
+import { NODE_COLORS, NODE_TYPE_LIST } from "../constants.js";
+
 //Class to Render the Map UI
 /*
 @svgEl : NodeElement
@@ -51,7 +53,8 @@ export class MapRenderer{
         circle.setAttribute("cx",mapNode.x*this.scale);
         circle.setAttribute("cy",mapNode.y*this.scale);
         circle.setAttribute("r",this.nodeRadius);
-        circle.setAttribute("fill",this.fill);
+        //Affect Color
+        circle.setAttribute("fill",NODE_COLORS[mapNode.type] ?? this.fill);
 
         //append in svgEl
         this.svgEl.append(circle);

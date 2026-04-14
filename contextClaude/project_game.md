@@ -198,12 +198,13 @@ Génération procédurale de la carte d'acte via BSP. **Option B choisie** : BSP
 **Décision 2026-04-12 — pivot vers génération par couches :**
 Le BSP seul ne produit pas de croisements ni de structure directionnelle. Nouvelle classe `LayeredMapGenerator` pour la carte d'acte style Slay the Spire. BSP conservé pour usage futur (donjons en grille).
 
-**État 2026-04-13 :**
+**État 2026-04-14 :**
 - `MapLayer.js` — génération d'une couche avec déviation aléatoire ✅
-- `LayeredMapGenerator.js` — génération complète + `_connectLayer()` (N plus proches + orphelins + anti-croisement) ✅
+- `LayeredMapGenerator.js` — génération complète + `_connectLayer()` (N plus proches + orphelins + anti-croisement + post-processing forcé) ✅
+- Zéro orphelin garanti ✅
 - Résultat visuel fonctionnel ✅
 
 **Prochaines étapes (prioritaires) :**
 1. **Typage des nœuds** — propriété `type` sur `MapNode`, méthode `assignTypes()` dans `LayeredMapGenerator` (`combat`, `merchant`, `rest`, `event`, `boss`)
 2. Rendu SVG enrichi (couleurs par type)
-3. Affinage visuel — orphelins résiduels, nœud hub, `maxConnections` par nœud
+3. Affinage visuel — nœud hub, `maxConnections` par nœud

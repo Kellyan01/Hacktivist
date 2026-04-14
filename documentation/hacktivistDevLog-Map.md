@@ -359,29 +359,155 @@ src/script/map/
 2. Étape 1 — pour chaque nœud de N : trouver les N plus proches sur N+1, vérifier anti-croisement, créer connexion, marquer dans `connectedIds`
 3. Étape 2 — pour chaque nœud de N+1 absent de `connectedIds` (orphelin) : connecter au plus proche sur N avec anti-croisement
 
-**Anti-croisement :** `_segmentsIntersect(a, b, c, d)` via `_orientation(p, q, r)` (produit vectoriel). Une connexion est rejetée si elle croise une connexion existante. Si aucun chemin sans croisement n'existe pour un orphelin, il reste non connecté (à améliorer).
+**Anti-croisement :** `_segmentsIntersect(a, b, c, d)` via `_orientation(p, q, r)` (produit vectoriel). Une connexion est rejetée si elle croise une connexion existante.
 
-**Résultat visuel :** structure en chemins multiples, croisements visuels éliminés, feeling organique grâce aux déviations aléatoires. Quelques orphelins résiduels et un nœud hub à corriger ultérieurement.
+**Post-processing anti-orphelin (ajouté 2026-04-14) :**
+Après `_connectLayer()`, parcours de tous les nœuds pour détecter ceux sans connexion vers floor-1 ou floor+1. Pour chaque nœud orphelin :
+1. Tentative de connexion avec anti-croisement (itère sur les nœuds de la couche cible)
+2. Si aucun chemin sans croisement trouvé → connexion forcée sur un nœud aléatoire de la couche
+
+Garantit zéro orphelin ✅
+
+**Résultat visuel :** structure en chemins multiples, croisements visuels éliminés, zéro orphelin, feeling organique. Nœud hub encore possible (à limiter avec `maxConnections` plus tard).
 
 **Testé et fonctionnel dans le navigateur ✅**
 
 ---
 
-## Prochaine étape — Typage des nœuds
+## Session 4 — 2026-04-14
 
-Ajouter une propriété `type` sur `MapNode` et une méthode `assignTypes()` dans `LayeredMapGenerator`.
+### Typage des nœuds + rendu coloré
 
-**Types prévus :**
+#### MapNode.js — propriété `type`
 
-| Type | Description | Fréquence |
-|---|---|---|
-| `combat` | Rencontre ennemie standard | Majoritaire |
-| `merchant` | Achat de cartes / objets | Rare |
-| `rest` | Récupération de PV | Rare |
-| `event` | Événement aléatoire | Occasionnel |
-| `boss` | Boss de fin d'acte | 1 par acte (dernier étage) |
+Ajout de `this.type = null` dans le constructeur. Valeur par défaut `null`, assignée par `LayeredMapGenerator.assignTypes()`.
 
-**Règles à définir :** le nœud de départ (premier étage) et le boss (dernier étage) ont des types fixes. Les autres sont assignés aléatoirement selon des probabilités.
+---
+
+#### LayeredMapGenerator.js — `assignTypes()`
+
+Méthode publique ajoutée, appelée en fin de `generateMap()`.
+
+Utilise un `switch` sur `node.floor` :
+
+| Condition | Type assigné |
+|---|---|
+| `floor === 1` | `"boss"` |
+| `floor === 2` | `"rest"` (safe place avant boss — 4 nœuds fixes) |
+| `floor === this.floor` | `"start"` |
+| `floor === this.floor - 1` | `"combat"` (premier combat forcé) |
+| Autres | Tirage aléatoire (voir ci-dessous) |
+
+**Probabilités du tirage aléatoire (`Math.random()*100`) :**
+
+| Seuil | Type |
+|---|---|
+| ≤ 40 | `"combat"` |
+| ≤ 60 | `"event"` |
+| ≤ 75 | `"rest"` |
+| ≤ 90 | `"merchant"` |
+| > 90 | `"mystery"` |
+
+---
+
+#### constants.js — `NODE_COLORS`
+
+Objet de correspondance `type → couleur` ajouté :
+
+```js
+export const NODE_COLORS = {
+    "combat":   "orange",
+    "event":    "purple",
+    "rest":     "green",
+    "merchant": "yellow",
+    "boss":     "red",
+    "start":    "white",
+    "mystery":  "gray"
+}
+```
+
+---
+
+#### MapRenderer.js — rendu coloré
+
+`_renderNodes` simplifié :
+
+```js
+circle.setAttribute("fill", NODE_COLORS[mapNode.type] ?? this.fill);
+```
+
+Fallback sur `this.fill` si le type est `null` ou inconnu.
+
+**Testé et fonctionnel dans le navigateur ✅**
+
+---
+
+### Refactor — probabilités dans les constantes
+
+**Fichiers :** `src/script/constants.js`, `src/script/map/LayeredMapGenerator.js`
+
+Ajout de `NODE_TYPE_CHANCE` dans `constants.js` — les probabilités sont centralisées, séparées des couleurs :
+
+```js
+export const NODE_TYPE_CHANCE = {
+    "combat":   45,
+    "event":    20,
+    "rest":     10,
+    "merchant": 10,
+    "mystery":  15
+}
+```
+
+`assignTypes()` remplacé par un tirage cumulatif générique (boucle sur `Object.entries`) :
+
+```js
+let cumul = 0;
+for (const [type, chance] of Object.entries(NODE_TYPE_CHANCE)) {
+    cumul += chance;
+    if (random <= cumul) { node.type = type; break; }
+}
+```
+
+Avantage : ajouter ou modifier un type ne nécessite que de toucher `constants.js`.
+
+---
+
+## Prochaine étape — Gradient spatial
+
+Remplacer la table pondérée fixe par des poids qui varient selon le `floor` du nœud.
+
+**Objectif :** encoder la progression dramatique de l'acte dans les probabilités — début brutal (combats), milieu respiratoire (repos, marchands), montée vers le boss imprévisible (events, mysteries).
+
+**Référence complète sur les algorithmes :** `documentation/hacktivistAlgorithmsNodeType.md`
+
+### Principe
+
+Remplacer `NODE_TYPE_CHANCE` (poids fixes) par une fonction `getWeights(floor, totalFloors)` qui retourne les poids dynamiquement.
+
+```js
+function getWeights(floor, totalFloors) {
+    const t = floor / totalFloors; // 0 (début) → 1 (boss)
+    return {
+        combat:   60 - t * 30,   // 60% → 30%
+        event:    10 + t * 20,   // 10% → 30%
+        rest:      5 + t * 15,   //  5% → 20%
+        merchant: 15 - t * 10,   // 15% →  5%
+        mystery:  10 + t *  5    // 10% → 15%
+    };
+}
+```
+
+### Fichiers à modifier
+
+| Fichier | Modification |
+|---|---|
+| `LayeredMapGenerator.js` | `assignTypes()` — utiliser `getWeights(node.floor, this.floor)` au lieu de `NODE_TYPE_CHANCE` |
+| `constants.js` | `NODE_TYPE_CHANCE` devient optionnel (ou conservé comme valeurs de référence) |
+
+### Questions de conception à trancher
+
+- Où placer `getWeights` ? Dans `LayeredMapGenerator`, dans `constants.js`, ou dans un fichier dédié `mapUtils.js` ?
+- Les valeurs des courbes (60, 30, 10, 20...) vont-elles dans les constantes pour être ajustables facilement ?
 
 ---
 

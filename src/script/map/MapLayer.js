@@ -38,7 +38,7 @@ export class MapLayer{
         for(let i = number; i > 0; i--){
             //RANDOMISE X POSTION
             // % of dist
-            let deviationX = Math.random()*0.25*dist;
+            let deviationX = Math.random()*0.3*dist;
             // increase or deacrease ?
             if(Math.random()<0.5) deviationX = -deviationX;
 

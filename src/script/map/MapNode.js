@@ -4,6 +4,7 @@
 @x : int
 @y : int
 @floor : int
+@type : string
 */
 export class MapNode{
     constructor(id,x,y,floor = 0){
@@ -11,5 +12,6 @@ export class MapNode{
         this.x = x;
         this.y = y;
         this.floor = floor;
+        this.type = null;
     }
 }

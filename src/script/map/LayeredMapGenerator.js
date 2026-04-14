@@ -1,5 +1,6 @@
 import { Connection } from "./Connection.js";
 import { MapLayer } from "./MapLayer.js";
+import { NODE_TYPE_LIST, NODE_TYPE_CHANCE } from "../constants.js";
 
 //Class to Generete the Map using Node Layers
 /*
@@ -132,8 +133,6 @@ export class LayeredMapGenerator {
 
     //Method to connect Nodes of a Layer with Nodes of Next Layer
     _connectLayer(){
-        // //final orphans
-        let copyOrphansList;
         //For each Layer
         //Limit case : If the Layer have last floor => return
         for(const layer of this.layers){
@@ -153,7 +152,8 @@ export class LayeredMapGenerator {
                 let copyMapNodes = [...mapNodes];
 
                 //random number of connection between 1 and 2
-                const n = Math.floor(Math.random()*1+1);
+                //const n = Math.floor(Math.random()*1+1);
+                const n = 1;
 
                 //max number of turn (n or mapNodes.length)
                 const max = Math.min(n, mapNodes.length);
@@ -211,9 +211,6 @@ export class LayeredMapGenerator {
                 return !connectedIds.has(node.id);
             })
 
-            // //Copy orphanList
-            copyOrphansList = [...orphansList];
-
             //Find the nearest node on layer
             //For each orphan
             for(const orphan of orphansList){
@@ -221,8 +218,8 @@ export class LayeredMapGenerator {
                 let copyMapNodes = [...layer.nodesList];
 
                 //random number of connection between 1 and 3
-                const n = Math.floor(Math.random()*2 + 1);
-                //const n = 1;
+                //const n = Math.floor(Math.random()*1 + 1);
+                const n = 1;
 
                 //max number of turn (n or layer.nodesList.length)
                 const max = Math.min(n, layer.nodesList.length);
@@ -267,10 +264,6 @@ export class LayeredMapGenerator {
                         //Add connected node id to Set
                         connectedIds.add(orphan.id);
                         connectedIds.add(nearNode.id);
-
-                        // //Delete orphan from copyOrphanList
-                        copyOrphansList = copyOrphansList.filter(node => node.id !== orphan.id);
-
                     }
 
                     //delete nearNode from copyMapNodes
@@ -294,29 +287,24 @@ export class LayeredMapGenerator {
                     const connectedNode = this.mapNodes[connection.to];
                     if(node.floor > connectedNode.floor){// connected to floor - 1
                         previousFloor = true;
-                        //console.log("Node From "+node.id+" - Floor "+node.floor+" : connected with Floor-1 by "+connectedNode.floor);
                     }
                     if(node.floor < connectedNode.floor){// connected to floor +1
                         nextFloor = true;
-                        //console.log("Node From "+node.id+" - Floor "+node.floor+" : connected with Floor+1 by "+connectedNode.floor);
                     }
                 }
                 if(node.id === connection.to){
                     const connectedNode = this.mapNodes[connection.from];
                     if(node.floor > connectedNode.floor){// connected to floor - 1
                         previousFloor = true;
-                        //console.log("Node To "+node.id+" - Floor "+node.floor+" : connected with Floor-1 by "+connectedNode.floor);
                     }
                     if(node.floor < connectedNode.floor){// connected to floor +1
                         nextFloor = true;
-                        //console.log("Node To "+node.id+" - Floor "+node.floor+" : connected with Floor+1 by "+connectedNode.floor);
                     }
                 }
             }
 
             //Step 2 : connected to first node of floor - 1 avoiding cross line
             if(!previousFloor && node.floor !== 1){//Verify node isn't on first layer
-                console.log("Node "+node.id+" - Floor "+node.floor+" : not connected with Floor-1");
 
                 let isConnected = false;
                 for(const previousNode of this.layers[node.floor-2].nodesList){ // layer of floor - 1
@@ -335,19 +323,11 @@ export class LayeredMapGenerator {
                                 }
                             }
 
-                            if(isCross){
-                                console.log("Node "+node.id+": Cross -> Connection Rejected")
-                            }else{
-                                console.log("Node "+node.id+": No Cross -> Accepted")
-                            }
-
                             //if isCross is false => no cross line => push connection
                             if(!isCross && !isConnected){
                                 //push connection in this.connections
                                 this.connections.push(connection);
 
-                                console.log("Node "+node.id+": Connection to floor -1")
-                                console.log("Connection is : "+connection.from+" to "+connection.to);
                                 //stop the loop
                                 isConnected = true;
                             }
@@ -357,26 +337,18 @@ export class LayeredMapGenerator {
 
                 //If isConnected is still false -> no connection => Force one connection
                 if(!isConnected){
-                    console.log("Node "+node.id+" - Floor "+node.floor+" : not connected with Floor-1 - No uncrossed line found");
                     //random node
                     const random = Math.floor(Math.random()*this.layers[node.floor-2].nodesList.length);
                     const crossNode = this.layers[node.floor-2].nodesList[random];
 
-                    console.log("Force connection with random node :"+crossNode.id);
-
                     //Create New Connection between node and nearNode
                     const connection = new Connection(node.id, crossNode.id);
                     this.connections.push(connection);
-
-                    console.log("Node "+node.id+": Connected to floor +1")
-                    console.log("Connection is : "+connection.from+" to "+connection.to);
                 }
             }
 
             //Step 3 : connected to first node of floor + 1 avoiding cross line
             if(!nextFloor && node.floor !== this.floor){//Verify node isn't on last layer
-                console.log("Node "+node.id+" - Floor "+node.floor+" : not connected with Floor+1");
-
                 let isConnected = false;
                 for(const nextNode of this.layers[node.floor].nodesList){ // layer of floor + 1
                     if(!isConnected){
@@ -394,19 +366,11 @@ export class LayeredMapGenerator {
                                 }
                             }
 
-                            if(isCross){
-                                console.log("Node "+node.id+": Cross -> Connection Rejected")
-                            }else{
-                                console.log("Node "+node.id+": No Cross -> Accepted")
-                            }
-
                             //if isCross is false => no cross line => push connection
                             if(!isCross && !isConnected){
                                 //push connection in this.connections
                                 this.connections.push(connection);
 
-                                console.log("Node "+node.id+": Connection to floor +1")
-                                console.log("Connection is : "+connection.from+" to "+connection.to);
                                 //stop the loop
                                 isConnected = true;
                             }
@@ -416,25 +380,17 @@ export class LayeredMapGenerator {
 
                 //If isConnected is still false -> no connection => Force one connection
                 if(!isConnected){
-                    console.log("Node "+node.id+" - Floor "+node.floor+" : not connected with Floor+1 - No uncrossed line found");
                     //random node
                     const random = Math.floor(Math.random()*this.layers[node.floor].nodesList.length);
                     const crossNode = this.layers[node.floor].nodesList[random];
 
-                    console.log("Force connection with random node :"+crossNode.id);
-
                     //Create New Connection between node and nearNode
                     const connection = new Connection(node.id, crossNode.id);
                     this.connections.push(connection);
-
-                    console.log("Node "+node.id+": Connected to floor +1")
-                    console.log("Connection is : "+connection.from+" to "+connection.to);
                 }
             }
         }
     }
-
-
 
     //Method to Generate Layer
     _generateLayer(){
@@ -499,6 +455,35 @@ export class LayeredMapGenerator {
     }
 
     //PUBLIC METHOD
+    //Method to assign type to each node
+    assignTypes(){
+        //For each node of yhis.mapNodes, assign a type
+        for(const node of this.mapNodes){
+            //Verify floor
+            switch(node.floor){
+                case 1 :
+                    node.type = NODE_TYPE_LIST.BOSS;
+                    break;
+                case 2 :
+                    node.type = NODE_TYPE_LIST.REST;
+                    break;
+                case this.floor :
+                    node.type = NODE_TYPE_LIST.START;
+                    break;
+                case this.floor - 1 :
+                    node.type = NODE_TYPE_LIST.COMBAT;
+                    break;
+                default :
+                    const random = Math.random()*100;
+                    let cumul = 0;
+                    for (const [type, chance] of Object.entries(NODE_TYPE_CHANCE)) {
+                        cumul += chance;
+                        if (random <= cumul) { node.type = type; break; }
+                    }
+            }
+        }
+    }
+
     //Method to generate Map
     generateMap(){
         //Set this.floor to 0
@@ -545,6 +530,9 @@ export class LayeredMapGenerator {
 
         //Connect Node
         this._connectLayer();
+
+        //Assign type to Node
+        this.assignTypes();
         
     }
 }
