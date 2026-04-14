@@ -472,42 +472,81 @@ Avantage : ajouter ou modifier un type ne nécessite que de toucher `constants.j
 
 ---
 
-## Prochaine étape — Gradient spatial
+## Décision d'architecture — Pattern Strategy (2026-04-14)
 
-Remplacer la table pondérée fixe par des poids qui varient selon le `floor` du nœud.
+L'assignation des types de nœuds passe au **Pattern Strategy** — chaque algorithme (table pondérée, gradient, Markov, budget...) devient une stratégie interchangeable. `LayeredMapGenerator` ne dépend que de l'abstraction parente.
 
-**Objectif :** encoder la progression dramatique de l'acte dans les probabilités — début brutal (combats), milieu respiratoire (repos, marchands), montée vers le boss imprévisible (events, mysteries).
+### Arborescence cible
 
-**Référence complète sur les algorithmes :** `documentation/hacktivistAlgorithmsNodeType.md`
+```
+src/script/map/strategies/
+├── AbstractNodeTypeStrategy.js   ← classe abstraite, définit la signature
+├── WeightedStrategy.js           ← table pondérée (algorithme actuel)
+└── GradientStrategy.js           ← gradient spatial (prochain objectif)
+```
 
-### Principe
-
-Remplacer `NODE_TYPE_CHANCE` (poids fixes) par une fonction `getWeights(floor, totalFloors)` qui retourne les poids dynamiquement.
+### Signature commune
 
 ```js
-function getWeights(floor, totalFloors) {
-    const t = floor / totalFloors; // 0 (début) → 1 (boss)
-    return {
-        combat:   60 - t * 30,   // 60% → 30%
-        event:    10 + t * 20,   // 10% → 30%
-        rest:      5 + t * 15,   //  5% → 20%
-        merchant: 15 - t * 10,   // 15% →  5%
-        mystery:  10 + t *  5    // 10% → 15%
-    };
+assignAll(mapNodes, totalFloors)
+```
+
+Option B (tous les nœuds d'un coup) choisie — seule option compatible avec toutes les stratégies futures (budget par acte nécessite une vision globale avant le premier assignement, Markov a besoin des voisins de chemin).
+
+### Intégration dans LayeredMapGenerator
+
+```js
+constructor(..., strategy) {
+    ...
+    this.strategy = strategy; // instance d'AbstractNodeTypeStrategy
+}
+
+// dans generateMap() :
+this.strategy.assignAll(this.mapNodes, this.floor);
+```
+
+---
+
+## Prochaine étape — Implémentation du Pattern Strategy
+
+### Étape 1 — AbstractNodeTypeStrategy.js
+
+Classe abstraite avec :
+- Blocage de l'instanciation directe (`new.target`)
+- Méthode abstraite `assignAll(mapNodes, totalFloors)` qui lève une erreur si appelée directement
+
+### Étape 2 — WeightedStrategy.js
+
+Migrer la logique actuelle de `assignTypes()` dans `LayeredMapGenerator` vers cette classe.
+
+### Étape 3 — GradientStrategy.js
+
+Implémenter le gradient spatial :
+
+```js
+assignAll(mapNodes, totalFloors) {
+    for (const node of mapNodes) {
+        // types fixes (boss, start, combat forcé, rest)
+        // ...
+        // types aléatoires : poids dynamiques selon node.floor
+        const t = node.floor / totalFloors;
+        const weights = {
+            combat:   60 - t * 30,
+            event:    10 + t * 20,
+            rest:      5 + t * 15,
+            merchant: 15 - t * 10,
+            mystery:  10 + t *  5
+        };
+        // tirage cumulatif sur weights
+    }
 }
 ```
 
-### Fichiers à modifier
+### Étape 4 — LayeredMapGenerator.js
 
-| Fichier | Modification |
-|---|---|
-| `LayeredMapGenerator.js` | `assignTypes()` — utiliser `getWeights(node.floor, this.floor)` au lieu de `NODE_TYPE_CHANCE` |
-| `constants.js` | `NODE_TYPE_CHANCE` devient optionnel (ou conservé comme valeurs de référence) |
+Remplacer `assignTypes()` par `this.strategy.assignAll(this.mapNodes, this.floor)`.
 
-### Questions de conception à trancher
-
-- Où placer `getWeights` ? Dans `LayeredMapGenerator`, dans `constants.js`, ou dans un fichier dédié `mapUtils.js` ?
-- Les valeurs des courbes (60, 30, 10, 20...) vont-elles dans les constantes pour être ajustables facilement ?
+**Référence algorithmes :** `documentation/hacktivistAlgorithmsNodeType.md`
 
 ---
 
