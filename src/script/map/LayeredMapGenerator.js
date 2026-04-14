@@ -275,18 +275,9 @@ export class LayeredMapGenerator {
 
                     //delete nearNode from copyMapNodes
                     copyMapNodes.splice(copyMapNodes.indexOf(nearNode),1);
-
-                    console.log("Orphans Origin :");
-                    console.log(orphansList);
-                    console.log("Orphans :");
-                    console.log(copyOrphansList);
                 }
             }
         }
-
-        // //It can have orphan yet
-        console.log("Final Orphans :")
-        console.log(copyOrphansList);
 
         /* // 1. Verify node having zero on floor +1 or on floor -1 => compare this.mapNodes and this.connections
            // 2. if zero connection on floor -1 (limit case : node on first layer / floor), create one connection with the first floor -1 node avoiding cross line
@@ -357,12 +348,28 @@ export class LayeredMapGenerator {
 
                                 console.log("Node "+node.id+": Connection to floor -1")
                                 console.log("Connection is : "+connection.from+" to "+connection.to);
-                                console.log(connection);
                                 //stop the loop
                                 isConnected = true;
                             }
                         }
                     }
+                }
+
+                //If isConnected is still false -> no connection => Force one connection
+                if(!isConnected){
+                    console.log("Node "+node.id+" - Floor "+node.floor+" : not connected with Floor-1 - No uncrossed line found");
+                    //random node
+                    const random = Math.floor(Math.random()*this.layers[node.floor-2].nodesList.length);
+                    const crossNode = this.layers[node.floor-2].nodesList[random];
+
+                    console.log("Force connection with random node :"+crossNode.id);
+
+                    //Create New Connection between node and nearNode
+                    const connection = new Connection(node.id, crossNode.id);
+                    this.connections.push(connection);
+
+                    console.log("Node "+node.id+": Connected to floor +1")
+                    console.log("Connection is : "+connection.from+" to "+connection.to);
                 }
             }
 
@@ -400,12 +407,28 @@ export class LayeredMapGenerator {
 
                                 console.log("Node "+node.id+": Connection to floor +1")
                                 console.log("Connection is : "+connection.from+" to "+connection.to);
-                                console.log(connection);
                                 //stop the loop
                                 isConnected = true;
                             }
                         }
                     }
+                }
+
+                //If isConnected is still false -> no connection => Force one connection
+                if(!isConnected){
+                    console.log("Node "+node.id+" - Floor "+node.floor+" : not connected with Floor+1 - No uncrossed line found");
+                    //random node
+                    const random = Math.floor(Math.random()*this.layers[node.floor].nodesList.length);
+                    const crossNode = this.layers[node.floor].nodesList[random];
+
+                    console.log("Force connection with random node :"+crossNode.id);
+
+                    //Create New Connection between node and nearNode
+                    const connection = new Connection(node.id, crossNode.id);
+                    this.connections.push(connection);
+
+                    console.log("Node "+node.id+": Connected to floor +1")
+                    console.log("Connection is : "+connection.from+" to "+connection.to);
                 }
             }
         }
