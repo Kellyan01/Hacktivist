@@ -36,17 +36,21 @@ export class MapLayer{
 
         //generate number MapNode
         for(let i = number; i > 0; i--){
+            //RANDOMISE POSITION
+            let deviationX = 0;
+            let deviationY = 0;
             //RANDOMISE X POSTION
             // % of dist
-            let deviationX = Math.random()*0.3*dist;
+            deviationX = Math.random()*0.2*dist;
             // increase or deacrease ?
             if(Math.random()<0.5) deviationX = -deviationX;
 
             //RANDOMISE Y POSTION
             // % of dist
-            let deviationY = Math.random()*0.3*this.height;
+            deviationY = Math.random()*0.25*this.height;
             // increase or deacrease ?
             if(Math.random()<0.5) deviationY = -deviationY;
+
             //Create the MapNode
             const node = new MapNode(id,x + deviationX,this.height*this.floor + deviationY, this.floor);
             //Push the node in the Layer node list
