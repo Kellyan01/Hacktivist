@@ -487,7 +487,7 @@ export class LayeredMapGenerator {
     //Method to generate Map
     generateMap(){
     let count = 0;
-    while(this.mapNodes.length < (3*this.nbrLayer+9)*0.9 || this.mapNodes.length > (3*this.nbrLayer+9)*1.10){
+    while(this.mapNodes.length < (4*this.nbrLayer+9)*0.8 || this.mapNodes.length > (4*this.nbrLayer+9)*1.20){
         //Reset of the generator
         this.layers = [];
         this.mapNodes= [];
