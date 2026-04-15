@@ -486,12 +486,15 @@ export class LayeredMapGenerator {
 
     //Method to generate Map
     generateMap(){
-        //Set this.floor to 0
-        this.floor = 0;
-
-        //Set first index to 0 and last index to -1
+    let count = 0;
+    while(this.mapNodes.length < (3*this.nbrLayer+9)*0.9 || this.mapNodes.length > (3*this.nbrLayer+9)*1.10){
+        //Reset of the generator
+        this.layers = [];
+        this.mapNodes= [];
+        this.connections = [];
         this.firstId = 0;
         this.lastId = -1;
+        this.floor = 0;
 
         //Generate the Top Layer
         //Increase the floor
@@ -534,5 +537,8 @@ export class LayeredMapGenerator {
         //Assign type to Node
         this.assignTypes();
         
+        count++;
+    }
+        console.log("Generate with "+count+" turns");
     }
 }
