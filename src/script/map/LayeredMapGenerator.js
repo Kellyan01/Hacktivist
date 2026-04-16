@@ -402,7 +402,22 @@ export class LayeredMapGenerator {
             if(limit.includes(layer.floor)) continue;
 
             for(const node of layer.nodesList){
-                //TODO
+                const prevIndex = layer.nodesList.indexOf(node) - 1;
+                const nextIndex = layer.nodesList.indexOf(node) + 1;
+                //Previous Neighboor
+                if(prevIndex >= 0){
+                    if(Math.random() < 0.1){
+                        const connection = new Connection(node.id, layer.nodesList[prevIndex].id)
+                        this.connections.push(connection);
+                    }
+                }
+                //Next Neighboor
+                if(nextIndex <= layer.nodesList.length -1 ){
+                    if(Math.random() < 0.3){
+                        const connection = new Connection(node.id, layer.nodesList[nextIndex].id)
+                        this.connections.push(connection);
+                    }
+                }
             }
         }
     }
