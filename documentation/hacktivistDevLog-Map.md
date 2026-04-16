@@ -550,4 +550,74 @@ Remplacer `assignTypes()` par `this.strategy.assignAll(this.mapNodes, this.floor
 
 ---
 
+## Session 5 — 2026-04-16
+
+### Generate and Test dans `generateMap()` — correction de formule
+
+**Fichier :** `src/script/map/LayeredMapGenerator.js`
+
+La formule d'estimation du nombre de nœuds attendus était incorrecte (`3*nbrLayer+9`). Avec `minNbrNode=2` et `maxNbrNode=6`, la moyenne réelle est 4 nœuds par couche.
+
+**Formule corrigée :**
+```js
+(4 * this.nbrLayer + 9) * 0.80  // borne basse  (±20%)
+(4 * this.nbrLayer + 9) * 1.20  // borne haute  (±20%)
+```
+
+Tolérance passée à ±20% — calibrage provisoire, à affiner après playtest. Utiliser `((min+max)/2)*nbrLayer+9` pour rendre la formule indépendante des paramètres à terme.
+
+---
+
+### `_connectNodesOnLayer()` — connexions intra-couche (raccourcis)
+
+**Fichier :** `src/script/map/LayeredMapGenerator.js`
+
+Nouvelle méthode privée. Génère aléatoirement des connexions entre nœuds voisins d'une même couche — des "raccourcis" horizontaux pour enrichir les stratégies de déplacement et s'articuler avec la Clock et le brouillard de guerre.
+
+**Algorithme :**
+
+1. Generate and Test — boucle jusqu'à obtenir entre `floor * 0.33` et `floor * 0.67` connexions intra-couche
+2. Couches exclues : floors 1, 2, `floor-1`, `floor` (boss, safe place, premier combat, start)
+3. Pour chaque nœud de chaque couche éligible :
+   - Voisin gauche (prevIndex) : 10% de chance de connexion
+   - Voisin droit (nextIndex) : probabilité recalibrée (à affiner)
+4. Filtre anti-doublon avant chaque push :
+
+```js
+if (!connectionsList.some(c =>
+    (c.from === node.id && c.to === neighbor.id) ||
+    (c.to === node.id && c.from === neighbor.id)
+)) connectionsList.push(connection);
+```
+
+**Probabilités asymétriques (intentionnel) :**
+Un nœud A vérifie son voisin droit B, puis B vérifie son voisin gauche A. Sans asymétrie, les chances de créer A↔B seraient doublées. Le 10% sur le retour compense.
+
+**Résultat :** connexions intra-couche rares, feeling de raccourcis organiques.
+
+---
+
+### Nouveaux documents de référence
+
+| Fichier | Contenu |
+|---|---|
+| `documentation/hacktivistAlgorithmsBSP.md` | BSP — historique, principe, variantes, applications |
+| `documentation/hacktivistAlgorithmsWFC.md` | WFC — historique, principe, variantes, applications |
+| `documentation/hacktivistGameDesign-Clock-FogOfWar-MapEvolution.md` | Conception des 3 mécaniques de jeu |
+
+---
+
+### Conception validée — Clock, Brouillard de guerre, Évolution dynamique
+
+Trois mécaniques interdépendantes conçues mais non implémentées. Voir `hacktivistGameDesign-Clock-FogOfWar-MapEvolution.md` pour le détail complet.
+
+Points clés :
+- Clock visible dès le départ, 1 unité par déplacement, Pattern Strategy pour les seuils narratifs
+- `MapNode.visibility` : `hidden` / `visible` / `revealed`, fenêtre ±2 floors
+- Tous les nœuds (cachés, visibles, visités) peuvent changer de type — contenu change avec le type
+- Backtracking possible et consomme la Clock
+- Architecture Pattern Observer : Clock émet, les autres systèmes réagissent
+
+---
+
 *Document vivant — à mettre à jour au fil de l'implémentation.*

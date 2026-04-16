@@ -394,32 +394,51 @@ export class LayeredMapGenerator {
 
     //Method to randomly connect Nodes on same Layer
     _connectNodesOnLayer(){
-        //If a node have a neighboor (neighboor.id === node.id +/- 1 AND neighboor.floor === node.floor)
-        //1. Generate a random and compare to a chance of connect
-        //2. Limit case : the combat on near-last layer (floor - 1) and the rest and second layer (floor 2) haven't to be connected
-        const limit = [1,2,(this.floor - 1), this.floor];
-        for(const layer of this.layers){
-            if(limit.includes(layer.floor)) continue;
+        //Generate and Test
+        let connectionsList = [];
+        while(connectionsList.length < this.floor * 0.33 || connectionsList.length > this.floor * 0.67){
+            //Reset connectionsList
+            connectionsList = [];
 
-            for(const node of layer.nodesList){
-                const prevIndex = layer.nodesList.indexOf(node) - 1;
-                const nextIndex = layer.nodesList.indexOf(node) + 1;
-                //Previous Neighboor
-                if(prevIndex >= 0){
-                    if(Math.random() < 0.1){
-                        const connection = new Connection(node.id, layer.nodesList[prevIndex].id)
-                        this.connections.push(connection);
+            //If a node have a neighboor (neighboor.id === node.id +/- 1 AND neighboor.floor === node.floor)
+            //1. Generate a random and compare to a chance of connect
+            //2. Limit case : the combat on near-last layer (floor - 1) and the rest and second layer (floor 2) haven't to be connected
+            const limit = [1,2,(this.floor - 1), this.floor];
+            for(const layer of this.layers){
+                if(limit.includes(layer.floor)) continue;
+
+                for(const node of layer.nodesList){
+                    const prevIndex = layer.nodesList.indexOf(node) - 1;
+                    const nextIndex = layer.nodesList.indexOf(node) + 1;
+                    //Previous Neighboor
+                    if(prevIndex >= 0){
+                        if(Math.random() < 0.1){
+                            const connection = new Connection(node.id, layer.nodesList[prevIndex].id)
+                            //Verify if connection already exists
+                            if(!connectionsList.some(connect => {
+                                return (connect.from === node.id && connect.to === layer.nodesList[prevIndex].id) || (connect.to === node.id && connect.from === layer.nodesList[prevIndex].id)
+                            })){
+                                connectionsList.push(connection);
+                            }
+                        }
                     }
-                }
-                //Next Neighboor
-                if(nextIndex <= layer.nodesList.length -1 ){
-                    if(Math.random() < 0.3){
-                        const connection = new Connection(node.id, layer.nodesList[nextIndex].id)
-                        this.connections.push(connection);
+                    //Next Neighboor
+                    if(nextIndex <= layer.nodesList.length -1 ){
+                        if(Math.random() < 0.3){
+                            const connection = new Connection(node.id, layer.nodesList[nextIndex].id)
+                            //Verify if connection already exists
+                            if(!connectionsList.some(connect => {
+                                return (connect.from === node.id && connect.to === layer.nodesList[nextIndex].id) || (connect.to === node.id && connect.from === layer.nodesList[nextIndex].id)
+                            })){
+                                connectionsList.push(connection);
+                            }
+                        }
                     }
                 }
             }
         }
+        console.log("Generate : "+connectionsList.length+" connections");
+        this.connections = this.connections.concat(connectionsList);
     }
 
     //Method to Generate Layer
