@@ -392,6 +392,21 @@ export class LayeredMapGenerator {
         }
     }
 
+    //Method to randomly connect Nodes on same Layer
+    _connectNodesOnLayer(){
+        //If a node have a neighboor (neighboor.id === node.id +/- 1 AND neighboor.floor === node.floor)
+        //1. Generate a random and compare to a chance of connect
+        //2. Limit case : the combat on near-last layer (floor - 1) and the rest and second layer (floor 2) haven't to be connected
+        const limit = [1,2,(this.floor - 1), this.floor];
+        for(const layer of this.layers){
+            if(limit.includes(layer.floor)) continue;
+
+            for(const node of layer.nodesList){
+                //TODO
+            }
+        }
+    }
+
     //Method to Generate Layer
     _generateLayer(){
         //Creation of the layer
@@ -533,6 +548,7 @@ export class LayeredMapGenerator {
 
         //Connect Node
         this._connectLayer();
+        this._connectNodesOnLayer();
 
         //Assign type to Node
         this.assignTypes();
