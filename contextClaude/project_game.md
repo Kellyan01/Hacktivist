@@ -213,7 +213,22 @@ Le BSP seul ne produit pas de croisements ni de structure directionnelle. Nouvel
 
 **Document de référence 2026-04-17 :** `documentation/gradients_probabilistes_game_design.md` — synthèse sur les courbes de probabilité (gaussiennes, smoothstep, puissance, Perlin, t-normes 2D, relation WFC).
 
-**Prochaines étapes (prioritaires) :**
-1. Expérimenter les courbes dans `NODE_TYPE_WEIGHTS` — gaussienne sur `rest`/`merchant`, puissance sur `event`
-2. Affinage visuel — nœud hub, `maxConnections` par nœud
-3. Implémentation Clock / brouillard de guerre / évolution dynamique
+**Décision 2026-04-17 :** `feature/map` prête à merger sur `developpement`. Les itérations suivantes (tuning courbes, navigation, Clock, brouillard) seront des features séparées.
+
+**Prochaine priorité — Navigation sur la carte :**
+Prérequis fonctionnel pour tester Clock et brouillard de guerre. Découpée en sous-features séquentielles :
+1. **`feature/map-navigation-core`** — position joueur (`currentNodeId`), calcul des nœuds atteignables, highlight visuel, clic et transition. Pas d'intégration combat.
+2. **`feature/map-navigation-combat`** — entrée d'un nœud `combat` → lance `CombatEngine`, gestion du retour à la carte après victoire.
+3. **`feature/map-navigation-other-nodes`** — rest (soin), merchant, event (minimal).
+
+**Questions de conception à trancher avant de coder la navigation :**
+- Où vit l'état de run ? Dans `Player` ou nouvelle classe `RunState` (plus propre, carte indépendante du combat) ?
+- Backtracking autorisé ? Le doc Clock dit oui et ça consomme — à confirmer.
+- Que fait l'entrée d'un nœud non-combat (event, rest, merchant) ? Scope à définir.
+- `CombatUI` devient-elle un mode parmi plusieurs ? Besoin d'un `GameController`/`SceneManager` au-dessus.
+
+**Après la navigation :**
+- Clock (compte à rebours, Pattern Observer)
+- Brouillard de guerre (`MapNode.visibility`)
+- Évolution dynamique (changement de type)
+- Tuning carte : expérimentation courbes (`NODE_TYPE_WEIGHTS`), `maxConnections`
