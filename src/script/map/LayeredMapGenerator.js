@@ -1,6 +1,5 @@
 import { Connection } from "./Connection.js";
-import { MapLayer } from "./MapLayer.js";
-import { NODE_TYPE_LIST, NODE_TYPE_CHANCE } from "../constants.js";
+import { MapLayer } from "./MapLayer.js"
 
 //Class to Generete the Map using Node Layers
 /*
@@ -12,16 +11,19 @@ import { NODE_TYPE_LIST, NODE_TYPE_CHANCE } from "../constants.js";
 @minNbrNode : int -> minimum number of node for each Layer
 @maxNbrNode : int -> maximum number of node for each Layer
 @nbrLayer : int -> quantity of Layer
+@strategy : AbstractNodeTypeStrategy
 @firstId : int -> index of the first MapNode
 @lastId : int -> index of the last MapNode
+@this.floor : int
 */
 export class LayeredMapGenerator {
-    constructor(width, height,minNbrNode,maxNbrNode,nbrLayer){
+    constructor(width, height,minNbrNode,maxNbrNode,nbrLayer, strategy){
         this.width = width;
         this.height = height;
         this.minNbrNode = minNbrNode;
         this.maxNbrNode = maxNbrNode;
         this.nbrLayer = nbrLayer;
+        this.strategy = strategy;
         this.layers = [];
         this.mapNodes= [];
         this.connections = [];
@@ -504,35 +506,6 @@ export class LayeredMapGenerator {
     }
 
     //PUBLIC METHOD
-    //Method to assign type to each node
-    assignTypes(){
-        //For each node of yhis.mapNodes, assign a type
-        for(const node of this.mapNodes){
-            //Verify floor
-            switch(node.floor){
-                case 1 :
-                    node.type = NODE_TYPE_LIST.BOSS;
-                    break;
-                case 2 :
-                    node.type = NODE_TYPE_LIST.REST;
-                    break;
-                case this.floor :
-                    node.type = NODE_TYPE_LIST.START;
-                    break;
-                case this.floor - 1 :
-                    node.type = NODE_TYPE_LIST.COMBAT;
-                    break;
-                default :
-                    const random = Math.random()*100;
-                    let cumul = 0;
-                    for (const [type, chance] of Object.entries(NODE_TYPE_CHANCE)) {
-                        cumul += chance;
-                        if (random <= cumul) { node.type = type; break; }
-                    }
-            }
-        }
-    }
-
     //Method to generate Map
     generateMap(){
     let count = 0;
@@ -585,7 +558,7 @@ export class LayeredMapGenerator {
         this._connectNodesOnLayer();
 
         //Assign type to Node
-        this.assignTypes();
+        this.strategy.assignAll(this.mapNodes, this.floor);
         
         count++;
     }

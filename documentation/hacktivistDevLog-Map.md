@@ -620,4 +620,102 @@ Points clés :
 
 ---
 
+## Session 6 — 2026-04-17
+
+### Pattern Strategy appliqué au typage des nœuds
+
+Le typage des nœuds, auparavant codé en dur dans `LayeredMapGenerator.assignTypes()`, est extrait dans une hiérarchie de stratégies. `LayeredMapGenerator` ne dépend plus que de l'abstraction — les algorithmes de typage deviennent interchangeables et testables séparément.
+
+#### Structure créée
+
+```
+src/script/map/strategies/
+├── AbstractNodeTypeStrategy.js   ← contrat commun
+├── WeightedStrategy.js           ← table pondérée (algo historique)
+└── GradientStrategy.js           ← gradient spatial (nouveau)
+```
+
+#### AbstractNodeTypeStrategy.js
+
+Classe abstraite, même pattern que `BehaviorInterface` / `EffectInterface` :
+- Instanciation directe bloquée via `new.target`
+- Méthode abstraite `assignAll(mapNodes, totalFloors)` qui throw si non redéfinie
+
+Pas de propriétés — la classe ne porte pas d'état, c'est un pur contrat.
+
+#### WeightedStrategy.js
+
+Migration de la logique existante de `assignTypes()`. `this.floor` remplacé par le paramètre `totalFloors` pour rendre la stratégie autonome du générateur. Switch identique (BOSS, REST, START, COMBAT forcés) + tirage cumulatif sur `NODE_TYPE_CHANCE`.
+
+#### GradientStrategy.js
+
+Nouvelle stratégie — les poids varient selon la position du nœud sur l'axe vertical :
+
+```js
+const t = 1 - (node.floor / totalFloors);
+```
+
+Inversion `1 - ...` appliquée car convention interne : `floor 1 = boss` (fin de run) et `floor max = start` (début). Donc `t=0` = début, `t=1` = fin.
+
+**Choix d'architecture** : les poids dynamiques sont externalisés dans `constants.js` sous forme de **fonctions** plutôt qu'en dur dans la stratégie.
+
+```js
+export const NODE_TYPE_WEIGHTS = {
+    "combat" :  (t) => 60 - t * 30,
+    "event" :   (t) => 10 + t * 20,
+    "rest" :    (t) => 5  + t * 15,
+    "merchant": (t) => 15 - t * 10,
+    "mystery":  (t) => 10 + t *  5
+};
+```
+
+Avantages :
+- Ajouter un type = toucher un seul fichier
+- Tuning game design centralisé
+- Signature `(t) => number` → peut accueillir gaussiennes, puissances, sinus sans refacto
+
+Somme à `t=0` et `t=1` = 100 — le tirage cumulatif `Math.random()*100` reste valide quel que soit `t`.
+
+#### Intégration dans LayeredMapGenerator
+
+- Constructeur accepte un paramètre `strategy` stocké dans `this.strategy`
+- Appel dans `generateMap()` : `this.strategy.assignAll(this.mapNodes, this.floor)`
+- Méthode `assignTypes()` supprimée
+- Imports `NODE_TYPE_LIST` et `NODE_TYPE_CHANCE` retirés du générateur
+
+#### Point d'injection
+
+`testMap.js` : bascule entre stratégies en une ligne, sans rien toucher au générateur.
+
+```js
+const map = new LayeredMapGenerator(20,45,2,6,20, new GradientStrategy());
+// const map = new LayeredMapGenerator(20,45,2,6,20, new WeightedStrategy());
+```
+
+Testé — la différence entre les deux stratégies est visible en poussant les paramètres aux extrêmes.
+
+---
+
+### Document de référence — gradients probabilistes
+
+**Fichier :** `documentation/gradients_probabilistes_game_design.md`
+
+Synthèse d'une exploration mathématique sur les courbes de probabilité utilisables pour le game design procédural :
+- Gaussienne inversée (creux central), somme de deux gaussiennes (double pic)
+- Extension 2D avec opérateurs de combinaison (t-normes / t-conormes de la logique floue)
+- Autres briques : smoothstep, puissance / racine, sinus / cosinus, bruit de Perlin, clamp + remap
+- Relation avec WFC (gradients = couche de bias ; WFC = cohérence d'assemblage)
+
+Ce document ouvre la voie à un travail de game design : quelle courbe pour quel type de nœud narrativement ? La signature `(t) => poids` de `NODE_TYPE_WEIGHTS` permet d'appliquer ces courbes directement sans refacto.
+
+---
+
+## Prochaines étapes
+
+1. Expérimenter les courbes dans `NODE_TYPE_WEIGHTS` — gaussienne centrée sur `rest` / `merchant`, puissance sur `event`
+2. Affinage visuel — `maxConnections` par nœud, limiter les hubs
+3. Implémentation Clock / brouillard de guerre / évolution dynamique (voir `hacktivistGameDesign-Clock-FogOfWar-MapEvolution.md`)
+
+---
+
 *Document vivant — à mettre à jour au fil de l'implémentation.*

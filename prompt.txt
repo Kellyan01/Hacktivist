@@ -7,3 +7,14 @@ Trouves ces deux dossiers et lis en les fichiers
 
 Fais une analyse de cette session de développement.
 Pour cela je souhaite que tu fasse une synthèse de ce qui a été fait, de ce qu'il reste à faire, et que tu me fasse un rapport de mes points forts et mes points faibles.
+
+
+Bonjour Claude
+Les fichiers de ta mémoire et de la documentation du projet se trouvent dans les dossiers ./contextClaude et ./documentation.
+Ces dossiers se trouvent au même niveau que le fichier index.html actuellement ouvert
+Trouves ces deux dossiers et lis les fichiers suivant :
+- MEMORY.md
+- feedback_teaching.md
+- user_profile.md
+- project_game.md
+- gameDesignDocument.md

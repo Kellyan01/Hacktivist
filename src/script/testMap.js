@@ -1,6 +1,8 @@
 import { MapGenerator } from "./map/MapGenerator.js";
 import { MapRenderer } from "./map/MapRenderer.js";
 import { LayeredMapGenerator } from "./map/LayeredMapGenerator.js";
+import { GradientStrategy } from "./map/strategies/GradientStrategy.js";
+import { WeightedStrategy } from "./map/strategies/WeightedStrategy.js";
 
 function generateBSPMap(){
     //Generate Map
@@ -32,7 +34,9 @@ function generateBSPMap(){
 
 function generateLayerMap(){
     //Generate Map
-    const map = new LayeredMapGenerator(20,45,2,6,6);
+    const map = new LayeredMapGenerator(20,45,2,6,20,new GradientStrategy());
+    //const map = new LayeredMapGenerator(20,45,2,6,20,new WeightedStrategy());
+    
     //Generate the Layer
     map.generateMap();
 

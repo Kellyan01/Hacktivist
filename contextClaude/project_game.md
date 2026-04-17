@@ -204,7 +204,16 @@ Le BSP seul ne produit pas de croisements ni de structure directionnelle. Nouvel
 - Zéro orphelin garanti ✅
 - Résultat visuel fonctionnel ✅
 
+**État 2026-04-17 — Pattern Strategy pour le typage ✅ :**
+- `strategies/AbstractNodeTypeStrategy.js` — contrat (`assignAll(mapNodes, totalFloors)`)
+- `strategies/WeightedStrategy.js` — migration de la logique historique (table pondérée fixe)
+- `strategies/GradientStrategy.js` — poids dynamiques selon `t = 1 - node.floor / totalFloors`
+- `NODE_TYPE_WEIGHTS` dans `constants.js` — poids sous forme de fonctions `(t) => number` (extensible gaussienne, puissance, sinus)
+- Injection par composition dans `LayeredMapGenerator`. Bascule de stratégie en une ligne dans `testMap.js`
+
+**Document de référence 2026-04-17 :** `documentation/gradients_probabilistes_game_design.md` — synthèse sur les courbes de probabilité (gaussiennes, smoothstep, puissance, Perlin, t-normes 2D, relation WFC).
+
 **Prochaines étapes (prioritaires) :**
-1. **Typage des nœuds** — propriété `type` sur `MapNode`, méthode `assignTypes()` dans `LayeredMapGenerator` (`combat`, `merchant`, `rest`, `event`, `boss`)
-2. Rendu SVG enrichi (couleurs par type)
-3. Affinage visuel — nœud hub, `maxConnections` par nœud
+1. Expérimenter les courbes dans `NODE_TYPE_WEIGHTS` — gaussienne sur `rest`/`merchant`, puissance sur `event`
+2. Affinage visuel — nœud hub, `maxConnections` par nœud
+3. Implémentation Clock / brouillard de guerre / évolution dynamique
