@@ -8,4 +8,5 @@
 - [Refacto architecture](../documentation/hacktivistDevLog-Refactoring-Architecture.md) — 8/8 recommandations terminées, EventEmitter (R8) ajouté le 2026-04-11
 - [IA ennemie](../documentation/hacktivistDevLog-Combat.md) — session 6, 2026-04-11, pattern Strategy (4 behaviors + ConditionFactory)
 - [Génération carte par couches](../documentation/hacktivistDevLog-Map.md) — session 6 2026-04-17, Pattern Strategy typage terminé ✅ (AbstractNodeTypeStrategy + WeightedStrategy + GradientStrategy)
+- [Navigation carte](../documentation/hacktivistDevLog-Navigation.md) — feature/map-navigation-core terminée 2026-04-17 : Navigator + MapUI + AbstractScene + MapScene + CombatScene + GameController ✅
 - [Gradients probabilistes](../documentation/gradients_probabilistes_game_design.md) — synthèse courbes (gaussiennes, smoothstep, puissance, Perlin) pour game design procédural

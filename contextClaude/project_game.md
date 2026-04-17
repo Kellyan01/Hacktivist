@@ -215,20 +215,31 @@ Le BSP seul ne produit pas de croisements ni de structure directionnelle. Nouvel
 
 **Décision 2026-04-17 :** `feature/map` prête à merger sur `developpement`. Les itérations suivantes (tuning courbes, navigation, Clock, brouillard) seront des features séparées.
 
-**Prochaine priorité — Navigation sur la carte :**
-Prérequis fonctionnel pour tester Clock et brouillard de guerre. Découpée en sous-features séquentielles :
-1. **`feature/map-navigation-core`** — position joueur (`currentNodeId`), calcul des nœuds atteignables, highlight visuel, clic et transition. Pas d'intégration combat.
-2. **`feature/map-navigation-combat`** — entrée d'un nœud `combat` → lance `CombatEngine`, gestion du retour à la carte après victoire.
-3. **`feature/map-navigation-other-nodes`** — rest (soin), merchant, event (minimal).
+---
 
-**Questions de conception à trancher avant de coder la navigation :**
-- Où vit l'état de run ? Dans `Player` ou nouvelle classe `RunState` (plus propre, carte indépendante du combat) ?
-- Backtracking autorisé ? Le doc Clock dit oui et ça consomme — à confirmer.
-- Que fait l'entrée d'un nœud non-combat (event, rest, merchant) ? Scope à définir.
-- `CombatUI` devient-elle un mode parmi plusieurs ? Besoin d'un `GameController`/`SceneManager` au-dessus.
+### Feature map-navigation-core — terminée 2026-04-17
 
-**Après la navigation :**
-- Clock (compte à rebours, Pattern Observer)
-- Brouillard de guerre (`MapNode.visibility`)
-- Évolution dynamique (changement de type)
-- Tuning carte : expérimentation courbes (`NODE_TYPE_WEIGHTS`), `maxConnections`
+Architecture scènes + navigation complète. Toutes les décisions de conception tranchées :
+- État de run dans `Navigator` (pas dans `Player`)
+- Backtracking autorisé (bidirectionnel)
+- Nœuds non-combat : `enterNode()` ne fait rien pour l'instant
+- `GameController` orchestre les transitions entre scènes
+
+**Nouveaux fichiers :**
+- `src/script/game/Navigator.js` — position courante + nœuds atteignables (bidirectionnel) + `moveTo()`
+- `src/script/game/MapUI.js` — rendu SVG interactif : connexions, nœuds colorés, overlay current/reachable, `bindEvents()`
+- `src/script/scenes/AbstractScene.js` — contrat commun (`launch()` abstrait, `new.target`)
+- `src/script/scenes/MapScene.js` — orchestre `Navigator` + `MapUI`, délègue à `GameController.enterNode()`
+- `src/script/scenes/CombatScene.js` — encapsule `CombatEngine` + `CombatUI`, s'abonne à `COMBAT_END`
+- `src/script/GameController.js` — transitions `start()` / `enterNode()` / `onCombatEnd()`
+
+**Résultat testé ✅ :**
+- Navigation carte fonctionnelle, clic nœud inaccessible sans effet
+- Combat se lance sur nœud `combat`, se déroule normalement
+- Retour à la carte après combat
+
+**Prochaines features (ordre suggéré) :**
+1. `feature/map-navigation-other-nodes` — rest (soin), merchant, event (minimal)
+2. `feature/clock` — compte à rebours, Pattern Observer, AbstractThresholdStrategy
+3. `feature/fog-of-war` — `MapNode.visibility`, fenêtre ±2 floors
+4. Tuning carte : courbes `NODE_TYPE_WEIGHTS`, `maxConnections`

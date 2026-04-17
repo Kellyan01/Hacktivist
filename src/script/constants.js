@@ -106,7 +106,9 @@ export const NODE_COLORS = {
     "merchant" : "yellow",
     "boss" : "red",
     "start" : "blue",
-    "mystery" : "gray"
+    "mystery" : "gray",
+    "current" : "white",
+    "reachable" : "cyan"
 }
 
 //Weight of each type for Spatial Gradient
