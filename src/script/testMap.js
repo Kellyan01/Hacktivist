@@ -40,9 +40,6 @@ function generateLayerMap(){
     //Generate the Layer
     map.generateMap();
 
-    //Display in Console
-    console.log(map);
-
     //Display in Browser
     const scale = 20;
     const svgEl = document.getElementById("map");
@@ -51,8 +48,6 @@ function generateLayerMap(){
 
     const mapRenderer = new MapRenderer(svgEl,map.mapNodes,map.connections,scale,8);
     mapRenderer.render();
-
-    console.log(map.connections);
 }
 
 //Launch the map generator

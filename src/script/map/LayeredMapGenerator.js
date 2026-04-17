@@ -439,7 +439,6 @@ export class LayeredMapGenerator {
                 }
             }
         }
-        console.log("Generate : "+connectionsList.length+" connections");
         this.connections = this.connections.concat(connectionsList);
     }
 
@@ -562,6 +561,5 @@ export class LayeredMapGenerator {
         
         count++;
     }
-        console.log("Generate with "+count+" turns");
     }
 }
