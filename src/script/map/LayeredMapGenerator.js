@@ -409,9 +409,10 @@ export class LayeredMapGenerator {
             for(const layer of this.layers){
                 if(limit.includes(layer.floor)) continue;
 
-                for(const node of layer.nodesList){
-                    const prevIndex = layer.nodesList.indexOf(node) - 1;
-                    const nextIndex = layer.nodesList.indexOf(node) + 1;
+                for(let i = 0; i < layer.nodesList.length; i++){
+                    const node = layer.nodesList[i];
+                    const prevIndex = i - 1;
+                    const nextIndex = i + 1;
                     //Previous Neighboor
                     if(prevIndex >= 0){
                         if(Math.random() < 0.1){
@@ -508,7 +509,8 @@ export class LayeredMapGenerator {
     //Method to generate Map
     generateMap(){
     let count = 0;
-    while(this.mapNodes.length < (4*this.nbrLayer+9)*0.8 || this.mapNodes.length > (4*this.nbrLayer+9)*1.20){
+    const averageNodeNumber = ((this.minNbrNode + this.maxNbrNode)/2)*this.nbrLayer+9;
+    while(this.mapNodes.length < averageNodeNumber*0.8 || this.mapNodes.length > averageNodeNumber*1.20){
         //Reset of the generator
         this.layers = [];
         this.mapNodes= [];
