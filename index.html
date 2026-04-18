@@ -8,28 +8,33 @@
 </head>
 <body>
     <header id="header">
-        <p id="info"></p>
+        
     </header>
     <main id="game">
-        <section id="combat-zone">
-            <section id="enemy-zone">
+        <article id="combat-container" class="hidden">
+            <section id="combat-zone">
+                <p id="info"></p>
+                <section id="enemy-zone">
+                </section>
+                <section id="player-zone">
+                    <article class="player-stats"></article>
+                    <article class="player-status"></article>
+                </section>
             </section>
-            <section id="player-zone">
-                <article class="player-stats"></article>
-                <article class="player-status"></article>
+            <section id="hand-zone">
             </section>
-        </section>
-        <section id="hand-zone">
-        </section>
-        <section id="controls-zone">
-            <button id="btn-end-turn">Fin de Tour</button>
-            <button id="btn-play">Jouer</button>
-            <button id="btn-discard">Défausser les Cartes</button>
-            <p id="combat-result"></p>
-        </section>
+            <section id="controls-zone">
+                <button id="btn-end-turn">Fin de Tour</button>
+                <button id="btn-play">Jouer</button>
+                <button id="btn-discard">Défausser les Cartes</button>
+                <p id="combat-result"></p>
+            </section>
+        </article>
+        <article id="map-container">
+            <svg id="map"></svg>
+        </article>
     </main>
     <footer>
-        <svg id="map"></svg>
     </footer>
     
     <script type="module" src="./src/script/script.js"></script>

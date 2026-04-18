@@ -222,6 +222,10 @@ export class CombatEngine {
 
     //Method to lauch the combat
     async launchFight(){
+        //Reset Combat
+        this.player.deck.discard.push(...this.player.deck.hand);
+        this.player.deck.hand = [];
+
         //initialize combat phase for playerTurn
         this.phase = PHASE.PLAYER_TURN; 
         await this.emitter.emit(EVENT_LIST.PHASE_CHANGED, PHASE.PLAYER_TURN);

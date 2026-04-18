@@ -143,7 +143,7 @@ Point d'entrée unique. Seul responsable des transitions de scène.
 | `enterNode(node)` | Si `node.type === NODE_TYPE_LIST.COMBAT` → lance `CombatScene`. Sinon : rien. |
 | `onCombatEnd(result)` | Relance `start()` → retour à la carte |
 
-**Paramètres :** `player`, `enemies`, `mapNodes`, `connections`, `svgEl`, `scale`, `startNodeId`, `energyPerTurn`, `handSize`.
+**Paramètres :** `player`, `enemies`, `mapNodes`, `connections`, `scale`, `startNodeId`, `energyPerTurn`, `handSize`. `svgEl`, `mapContainerEl` et `combatContainerEl` sont récupérés directement via `getElementById` dans le constructeur.
 
 **Note :** `enemies` est actuellement une liste fixe. À terme, chaque nœud combat portera ses propres ennemis.
 
@@ -151,15 +151,15 @@ Point d'entrée unique. Seul responsable des transitions de scène.
 
 ### script.js — refactorisation
 
-Le point d'entrée est simplifié : génère la carte, récupère `startNodeId` via `mapNodes.find(n => n.type === NODE_TYPE_LIST.START).id`, instancie `GameController`, appelle `start()`. Les imports `CombatEngine`, `CombatUI`, `MapRenderer` sont retirés — encapsulés dans les scènes.
+Le point d'entrée est simplifié : génère la carte, récupère `startNodeId` via `mapNodes.find(n => n.type === NODE_TYPE_LIST.START).id`, instancie `GameController`, appelle `start()`. Les imports `CombatEngine`, `CombatUI`, `MapRenderer` sont retirés — encapsulés dans les scènes. Les dimensions de carte passent par `DIMENSION_MAP`.
 
 ---
 
-## Structure des fichiers (état après cette session)
+## Structure des fichiers (état après session 1)
 
 ```
 src/script/
-├── constants.js                ← NODE_COLORS["current"] et ["reachable"] ajoutés
+├── constants.js                ← NODE_COLORS["current"/"reachable"] + DIMENSION_MAP ajoutés
 ├── GameController.js           ← NOUVEAU
 ├── game/
 │   ├── CombatEngine.js
@@ -176,12 +176,73 @@ src/script/
 
 ---
 
-## Résultat testé ✅
+## Résultat testé ✅ — session 1
 
 - Navigation sur la carte fonctionnelle
 - Clic sur nœud inaccessible sans effet
 - Nœud `combat` → lancement du combat
 - Fin de combat → retour à la carte
+
+---
+
+## Session 2 — 2026-04-18
+
+### Transitions de scènes et corrections de boucle
+
+#### index.html — restructuration sémantique
+
+Les deux zones de jeu sont désormais des `<article>` dans `<main id="game">` :
+
+```html
+<article id="combat-container" class="hidden"> ... </article>
+<article id="map-container"> ... </article>
+```
+
+`#combat-container` démarre caché via la classe `.hidden` (`display: none` dans `main.css`).
+
+`#info` déplacé dans `#combat-container` — il appartient à la scène combat.
+
+#### constants.js — DIMENSION_MAP
+
+```js
+export const DIMENSION_MAP = {
+    WIDTH : 25,
+    HEIGHT : 40,
+    SCALE : 20
+}
+```
+
+Centralise la configuration de la carte. Utilisé dans `script.js` (paramètres `LayeredMapGenerator`) et `MapUI.render()` (dimensions du SVG). Remplace les valeurs en dur dispersées dans le code.
+
+#### GameController — gestion de la visibilité
+
+Nouvelles méthodes privées `_showMap()` / `_showCombat()` — basculent la classe `hidden` sur les deux conteneurs.
+
+`currentNodeId` ajouté — mémorise la position courante du joueur sur la carte entre les scènes. Mis à jour dans `enterNode(node)`, passé à `MapScene` dans `start()` pour restaurer la position après un combat.
+
+`onCombatEnd(result)` — ajoute un listener `{ once: true }` sur `combatContainerEl` : au clic, appelle `_showMap()` puis `start()`. Le joueur clique pour fermer l'écran de combat.
+
+#### CombatEngine.launchFight() — reset du deck
+
+Ajout en tête de méthode :
+```js
+this.player.deck.discard.push(...this.player.deck.hand);
+this.player.deck.hand = [];
+```
+Garantit que la main du combat précédent ne pollue pas le deck du nouveau combat.
+
+#### MapUI.render() — dimensions du SVG
+
+`render()` applique désormais `width` et `height` sur `svgEl` via `DIMENSION_MAP` avant de dessiner. `GameController` n'a plus à s'en occuper.
+
+---
+
+## Résultat testé ✅ — session 2
+
+- Map visible au démarrage, combat caché
+- Entrée nœud combat → carte masquée, combat affiché
+- Fin de combat → clic pour fermer → retour carte à la bonne position
+- Nouveau combat correctement réinitialisé (deck propre)
 
 ---
 

@@ -119,3 +119,10 @@ export const NODE_TYPE_WEIGHTS = {
     "merchant" : (t) => 15 - t * 10,
     "mystery" : (t) => 10 + t *  10
 };
+
+//Dimension of Map
+export const DIMENSION_MAP = {
+    WIDTH : 25,
+    HEIGHT : 40,
+    SCALE : 20
+}

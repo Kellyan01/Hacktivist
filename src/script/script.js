@@ -4,7 +4,7 @@ import {FirewallPersonnel} from './entities/cardEntities/FirewallPersonnel.js';
 import {FrappeCybernetique} from './entities/cardEntities/FrappeCybernetique.js';
 import {ScanBasique} from './entities/cardEntities/ScanBasique.js';
 import {GardeDeNuit} from './entities/characterEntities/GardeDeNuit.js';
-import { NODE_TYPE_LIST, TYPE_CHARACTER } from './constants.js';
+import { NODE_TYPE_LIST, TYPE_CHARACTER, DIMENSION_MAP } from './constants.js';
 import { LayeredMapGenerator } from "./map/LayeredMapGenerator.js";
 import { GradientStrategy } from "./map/strategies/GradientStrategy.js";
 import { GameController } from './GameController.js';
@@ -30,7 +30,7 @@ function createEnemies(){
 
 function generateLayerMap(){
     //Generate Map
-    const map = new LayeredMapGenerator(20,45,2,6,20,new GradientStrategy());
+    const map = new LayeredMapGenerator(DIMENSION_MAP.WIDTH,DIMENSION_MAP.HEIGHT,2,6,8,new GradientStrategy());
     
     //Generate the Layer
     map.generateMap();
@@ -48,14 +48,8 @@ function generateLayerMap(){
     //Create enemies
     const enemies = createEnemies();
 
-    //Target end Config SVG element
-    const scale = 20;
-    const svgEl = document.getElementById("map");
-    svgEl.setAttribute("width", map.width * scale);
-    svgEl.setAttribute("height", map.height * scale);
-
     //Instanciate GameController
-    const gameController = new GameController(player,enemies,mapNodes,connections,svgEl,scale,startNodeId,3,3);
+    const gameController = new GameController(player,enemies,mapNodes,connections,DIMENSION_MAP.SCALE,startNodeId,3,3);
 
     gameController.start();
 }

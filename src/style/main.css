@@ -2,11 +2,11 @@
     background-color: #545454;
 }
 
-#game.ghost-mode {
+#combat-container.ghost-mode {
     background-color: #73e6d7;
 }
 
-#game.red-alert-mode {
+#combat-container.red-alert-mode {
     background-color: #e84242;
 }
 
@@ -16,4 +16,8 @@
 
 .selected {
     border: 2px orange solid;
+}
+
+.hidden {
+    display : none;
 }

@@ -31,6 +31,8 @@ export class CombatScene extends AbstractScene{
         this.combatUI.bindEmitter();
         //bind events on ui
         this.combatUI.bindEvents();
+        //reset combat result message
+        this.combatUI.combatResultEl.replaceChildren();
         //render the ui
         this.combatUI.render();
         //subscribe ton end of fight

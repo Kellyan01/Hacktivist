@@ -238,6 +238,26 @@ Architecture scènes + navigation complète. Toutes les décisions de conception
 - Combat se lance sur nœud `combat`, se déroule normalement
 - Retour à la carte après combat
 
+---
+
+### Transitions de scènes — terminées 2026-04-18
+
+Boucle map → combat → retour carte complète et correcte.
+
+**Changements :**
+- `index.html` — restructuration sémantique : `#combat-container` (`.hidden` par défaut) et `#map-container` comme `<article>` dans `<main>`
+- `constants.js` — `DIMENSION_MAP { WIDTH, HEIGHT, SCALE }` pour centraliser la config carte
+- `GameController` — `_showMap()` / `_showCombat()` + `currentNodeId` mémorisé entre scènes + `onCombatEnd` avec listener `{ once: true }` (clic pour fermer l'écran combat)
+- `CombatEngine.launchFight()` — reset du deck en tête de méthode (hand → discard avant shuffle)
+- `MapUI.render()` — applique les dimensions SVG via `DIMENSION_MAP`
+
+**Prochaines étapes :**
+- `feature/map-navigation-other-nodes` — rest, merchant, event
+- Défaite en combat
+- Ennemis par nœud
+- `feature/clock`
+- `feature/fog-of-war`
+
 **Prochaines features (ordre suggéré) :**
 1. `feature/map-navigation-other-nodes` — rest (soin), merchant, event (minimal)
 2. `feature/clock` — compte à rebours, Pattern Observer, AbstractThresholdStrategy

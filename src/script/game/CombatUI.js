@@ -22,7 +22,7 @@ export class CombatUI{
         this.combatEngine = combatEngine;
         this.player = player;
         this.enemies = enemies;
-        this.gameEl = document.querySelector("#game");
+        this.gameEl = document.querySelector("#combat-container");
         this.enemyZoneEl = document.querySelector("#enemy-zone");
         this.playerStatsEl = document.querySelector(".player-stats");
         this.playerStatusEl = document.querySelector(".player-status");

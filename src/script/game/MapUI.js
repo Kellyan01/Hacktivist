@@ -1,4 +1,4 @@
-import {NODE_COLORS} from '../constants.js';
+import {NODE_COLORS, DIMENSION_MAP} from '../constants.js';
 
 //Class to render the UI of navigation on map
 /*
@@ -36,6 +36,10 @@ export class MapUI {
 
     //Methode to make the render
     render(){
+        //Dimension of Map
+        this.svgEl.setAttribute("width", DIMENSION_MAP.WIDTH * this.scale);
+        this.svgEl.setAttribute("height", DIMENSION_MAP.HEIGHT * this.scale);
+
         //empty the SVG element
         this.svgEl.replaceChildren();
 
@@ -56,6 +60,24 @@ export class MapUI {
             this.svgEl.append(line);
         }
 
+        //Reachable Node
+        const reachableNodes = this.navigator.getReachableNodes();
+        for(const node of reachableNodes){
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle")
+
+            //Styling the circle
+            circle.setAttribute("cx",node.x*this.scale);
+            circle.setAttribute("cy",node.y*this.scale);
+            circle.setAttribute("r",15);
+            circle.setAttribute("data-node-id", node.id)
+            circle.style.opacity = 0.6;
+            //Affect Color
+            circle.setAttribute("fill",NODE_COLORS["reachable"]);
+
+            //append in svgEl
+            this.svgEl.append(circle);
+        }
+
         //2. RENDER node
         for(const node of this.mapNodes){
             //Create the SVG element circle
@@ -64,7 +86,7 @@ export class MapUI {
             //Styling the circle
             circle.setAttribute("cx",node.x*this.scale);
             circle.setAttribute("cy",node.y*this.scale);
-            circle.setAttribute("r",5);
+            circle.setAttribute("r",10);
             circle.setAttribute("data-node-id", node.id)
             //Affect Color
             circle.setAttribute("fill",NODE_COLORS[node.type] ?? this.fill);
@@ -82,7 +104,7 @@ export class MapUI {
         //Styling the circle
         circle.setAttribute("cx",currentNode.x*this.scale);
         circle.setAttribute("cy",currentNode.y*this.scale);
-        circle.setAttribute("r",8);
+        circle.setAttribute("r",5);
         circle.setAttribute("data-node-id", currentNode.id)
         circle.style.opacity = 0.9;
         //Affect Color
@@ -91,22 +113,6 @@ export class MapUI {
         //append in svgEl
         this.svgEl.append(circle);
 
-        //Reachable Node
-        const reachableNodes = this.navigator.getReachableNodes();
-        for(const node of reachableNodes){
-            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle")
-
-            //Styling the circle
-            circle.setAttribute("cx",node.x*this.scale);
-            circle.setAttribute("cy",node.y*this.scale);
-            circle.setAttribute("r",8);
-            circle.setAttribute("data-node-id", node.id)
-            circle.style.opacity = 0.6;
-            //Affect Color
-            circle.setAttribute("fill",NODE_COLORS["reachable"]);
-
-            //append in svgEl
-            this.svgEl.append(circle);
-        }
+        
     }
 }
