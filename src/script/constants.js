@@ -108,7 +108,8 @@ export const NODE_COLORS = {
     "start" : "blue",
     "mystery" : "gray",
     "current" : "white",
-    "reachable" : "cyan"
+    "reachable" : "cyan",
+    "hidden" : "black"
 }
 
 //Weight of each type for Spatial Gradient
@@ -125,4 +126,11 @@ export const DIMENSION_MAP = {
     WIDTH : 25,
     HEIGHT : 40,
     SCALE : 20
+}
+
+//visibility of Node
+export const NODE_VISIBILITY = {
+    HIDDEN : "hidden",
+    VISIBLE : "visible",
+    REVEALED : "revealed"
 }

@@ -1,4 +1,4 @@
-import {NODE_COLORS, DIMENSION_MAP} from '../constants.js';
+import {NODE_COLORS, DIMENSION_MAP, NODE_VISIBILITY, NODE_TYPE_LIST} from '../constants.js';
 
 //Class to render the UI of navigation on map
 /*
@@ -87,9 +87,14 @@ export class MapUI {
             circle.setAttribute("cx",node.x*this.scale);
             circle.setAttribute("cy",node.y*this.scale);
             circle.setAttribute("r",10);
-            circle.setAttribute("data-node-id", node.id)
-            //Affect Color
-            circle.setAttribute("fill",NODE_COLORS[node.type] ?? this.fill);
+            //Visible or not ?
+            if(node.visibility === NODE_VISIBILITY.HIDDEN && node.type !== NODE_TYPE_LIST.BOSS && node.type !== NODE_TYPE_LIST.START){
+                circle.setAttribute("fill",NODE_COLORS.hidden);
+            }else if(node.visibility === NODE_VISIBILITY.VISIBLE || node.visibility === NODE_VISIBILITY.REVEALED){
+                circle.setAttribute("data-node-id", node.id)
+                //Affect Color
+                circle.setAttribute("fill",NODE_COLORS[node.type] ?? this.fill);
+            }
 
             //append in svgEl
             this.svgEl.append(circle);

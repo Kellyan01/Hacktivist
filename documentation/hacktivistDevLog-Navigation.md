@@ -246,13 +246,84 @@ Garantit que la main du combat précédent ne pollue pas le deck du nouveau comb
 
 ---
 
+## Session 3 — 2026-04-18
+
+### Feature : brouillard de guerre
+
+#### MapNode.js — propriété `visibility`
+
+`this.visibility = NODE_VISIBILITY.HIDDEN` ajouté dans le constructeur. Valeur initiale : tous les nœuds cachés.
+
+Import de `NODE_VISIBILITY` depuis `constants.js`.
+
+#### constants.js — NODE_VISIBILITY + NODE_COLORS.hidden
+
+```js
+export const NODE_VISIBILITY = {
+    HIDDEN :   "hidden",
+    VISIBLE :  "visible",
+    REVEALED : "revealed"
+}
+```
+
+`NODE_COLORS["hidden"] = "black"` ajouté pour le rendu des nœuds cachés.
+
+#### FogOfWar.js
+
+**Fichier :** `src/script/game/FogOfWar.js`
+
+| Propriété | Type | Description |
+|---|---|---|
+| `range` | `int` | Fenêtre de visibilité en nombre de floors (défaut : 2) |
+
+| Méthode | Description |
+|---|---|
+| `updateVisibility(currentNode, mapNodes)` | Marque `currentNode` comme `REVEALED`, met à jour tous les autres nœuds selon leur distance en floors |
+
+**Algorithme :**
+1. `currentNode.visibility = REVEALED`
+2. Pour chaque nœud non-`REVEALED` : si `|node.floor - currentNode.floor| <= range` → `VISIBLE`, sinon → `HIDDEN`
+
+Les nœuds déjà `REVEALED` ne sont jamais rétrogradés.
+
+#### MapScene.js — intégration FogOfWar
+
+`FogOfWar` instancié dans le constructeur (`this.fogOfWar = new FogOfWar()`).
+
+`launch()` — appel de `fogOfWar.updateVisibility(currentNode, mapNodes)` avant le premier `render()`.
+
+`_onNodeClick()` — ordre correct :
+1. `navigator.moveTo()`
+2. `fogOfWar.updateVisibility()` ← avant le render
+3. `mapUI.render()`
+4. `gameController.enterNode()`
+
+#### MapUI.render() — rendu conditionnel par visibilité
+
+Nœuds `HIDDEN` : cercle noir (`NODE_COLORS.hidden`), **sans** `data-node-id` → non cliquables.
+
+Nœuds `VISIBLE` / `REVEALED` : comportement existant (couleur par type, `data-node-id`).
+
+**Décision game design** : nœuds `boss` et `start` toujours affichés avec leur couleur, quelle que soit leur visibilité — le joueur voit toujours l'objectif et son point de départ.
+
+---
+
+## Résultat testé ✅ — session 3
+
+- Nœuds cachés affichés en noir, non cliquables
+- Fenêtre de visibilité ±2 floors se met à jour à chaque déplacement
+- Nœuds visités restent révélés (jamais rétrogradés)
+- Boss et start toujours visibles
+
+---
+
 ## Prochaines étapes
 
-1. `feature/map-navigation-other-nodes` — rest (soin), merchant, event (scènes minimales)
-2. Gérer la défaite en combat (actuellement toujours retour à la carte)
-3. Ennemis par nœud (actuellement liste fixe dans `GameController`)
-4. `feature/clock` — compte à rebours, Pattern Observer, `AbstractThresholdStrategy`
-5. `feature/fog-of-war` — `MapNode.visibility`, fenêtre ±2 floors
+1. `feature/clock` — compte à rebours, Pattern Observer, `AbstractThresholdStrategy`. Décision à prendre : que se passe-t-il quand la Clock atteint 0 ?
+2. `feature/map-navigation-other-nodes` — rest (soin), merchant, event
+3. Défaite en combat
+4. Ennemis par nœud
+5. Évolution dynamique des nœuds sur `CLOCK_THRESHOLD`
 
 ---
 

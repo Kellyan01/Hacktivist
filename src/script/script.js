@@ -24,7 +24,7 @@ function createPlayer(){
 
 function createEnemies(){
     //Create an enemy
-    return [new GardeDeNuit(),new GardeDeNuit()];
+    return [new GardeDeNuit()];
 }
 
 

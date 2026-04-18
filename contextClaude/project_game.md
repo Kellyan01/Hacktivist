@@ -258,6 +258,23 @@ Boucle map → combat → retour carte complète et correcte.
 - `feature/clock`
 - `feature/fog-of-war`
 
+---
+
+### Brouillard de guerre — terminé 2026-04-18
+
+**Nouveaux fichiers :**
+- `src/script/game/FogOfWar.js` — `updateVisibility(currentNode, mapNodes)`, fenêtre ±range floors, nœuds visités jamais rétrogradés
+
+**Modifiés :**
+- `MapNode.js` — `this.visibility = NODE_VISIBILITY.HIDDEN`
+- `constants.js` — `NODE_VISIBILITY` + `NODE_COLORS["hidden"]`
+- `MapScene.js` — FogOfWar instancié, appelé avant chaque render
+- `MapUI.render()` — nœuds hidden en noir sans `data-node-id`, boss/start toujours visibles
+
+**Prochaine priorité — `feature/clock` :**
+Décision à trancher : que se passe-t-il quand la Clock atteint 0 ? (game over immédiat, malus, autre ?)
+Architecture prévue : classe `Clock` + Pattern Observer + `AbstractThresholdStrategy`.
+
 **Prochaines features (ordre suggéré) :**
 1. `feature/map-navigation-other-nodes` — rest (soin), merchant, event (minimal)
 2. `feature/clock` — compte à rebours, Pattern Observer, AbstractThresholdStrategy
